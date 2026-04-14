@@ -1,0 +1,51 @@
+﻿using DevExpress.Utils.MVVM;
+using TA2100Modules;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace TA2100Modules
+{
+    public partial class LightCalibControl : DevExpress.XtraEditors.XtraForm
+    {
+        private CalibrationModule _calibrationModule;
+        public LightCalibControl(CalibrationModule module)
+        {
+            InitializeComponent();
+            _calibrationModule = module;
+            if (!mvvmContext1.IsDesignMode)
+                InitializeBindings();
+        }
+
+        void InitializeBindings()
+        {
+            var fluent = mvvmContext1.OfType<LightCalibControlViewModel>();
+
+            fluent.ViewModel.Initial(_calibrationModule);
+
+            //按鍵事件
+            fluent.BindCommand(Btn_AX1_Move, module => module.AX1_Move);
+            fluent.BindCommand(Btn_AZ1_Move, module => module.AZ1_Move);
+            fluent.BindCommand(Btn_Save, module => module.Save);
+            fluent.BindCommand(Btn_Carrier_Move, module => module.Carrier_Move);
+
+            //DataSource
+            LUE_Vel.Properties.DataSource = fluent.ViewModel.VelList;
+
+            //參數
+            fluent.SetBinding(TE_Cam_XOffset, obj => obj.Text, module => module.Cam_XOffsetLightCalib);
+            fluent.SetBinding(TE_Cam_ZOffset, obj => obj.Text, module => module.Cam_ZOffsetLightCalib);
+            fluent.SetBinding(TE_Carrier_YOffset, obj => obj.Text, module => module.Carrier_YOffsetLightCalib);
+            fluent.SetBinding(LUE_Vel, l => l.EditValue, x => x.Vel);
+
+            fluent.SetBinding(TS_ProductJacking, obj => obj.IsOn, module => module.Product_IsJacking);
+            fluent.SetBinding(TS_Productaside, obj => obj.IsOn, module => module.Product_IsAside);
+        }
+    }
+}

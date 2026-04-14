@@ -1,0 +1,258 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3D16C0A5-3647-4390-9DC9-0BB8E23CB04E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>FlowCarrierModule</RootNamespace>
+    <AssemblyName>FlowCarrierModule</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>D:\HTASource\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\HTASource\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.Desktop.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.Desktop.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Mvvm.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Mvvm.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v21.2.Core, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Printing.v21.2.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Sparkline.v21.2.Core, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Sparkline.v21.2.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Utils.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.XtraEditors.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.Com">
+      <HintPath>..\..\HTALibs\HTA.Com\Debug\HTA.Com.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.FSM, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Machine\Debug\HTA.FSM.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.SecsBase, Version=1.0.0.712, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.SecsBase\Debug\HTA.SecsBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachine">
+      <HintPath>D:\HTASource\HTALibs\HTA.Machine\Debug\HTAMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommon, Version=1.0.2026.122, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\ModuleCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ConnectionStateForm.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ConnectionStateForm.Designer.cs">
+      <DependentUpon>ConnectionStateForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FlowCarrierGlobalSetting.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FlowCarrierGlobalSetting.Designer.cs">
+      <DependentUpon>FlowCarrierGlobalSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FlowCarrierGlobalSettingViewModel.cs" />
+    <Compile Include="FlowCarrierModule.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FlowCarrierModule.Designer.cs">
+      <DependentUpon>FlowCarrierModule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FlowCarrierModule_IO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FlowCarrierProductSetting.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FlowCarrierProductSetting.Designer.cs">
+      <DependentUpon>FlowCarrierProductSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FlowCarrierProductSettingViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="FlowCarrierModuleParam.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.zh-Hant.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.zh-Hant.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TCPIPComForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TCPIPComForm.Designer.cs">
+      <DependentUpon>TCPIPComForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TCPIPComViewModel.cs" />
+    <Compile Include="TCPIPTool.cs" />
+    <Compile Include="UPHCalculate.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UPHCalculate.Designer.cs">
+      <DependentUpon>UPHCalculate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UPHCalculateViewModel.cs" />
+    <Compile Include="VacuumSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VacuumSettingForm.Designer.cs">
+      <DependentUpon>VacuumSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="VacuumViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ConnectionStateForm.resx">
+      <DependentUpon>ConnectionStateForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierGlobalSetting.resx">
+      <DependentUpon>FlowCarrierGlobalSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierGlobalSetting.zh-Hant.resx">
+      <DependentUpon>FlowCarrierGlobalSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierGlobalSetting.zh.resx">
+      <DependentUpon>FlowCarrierGlobalSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierModule.resx">
+      <DependentUpon>FlowCarrierModule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierProductSetting.resx">
+      <DependentUpon>FlowCarrierProductSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FlowCarrierProductSetting.zh-Hant.resx">
+      <DependentUpon>FlowCarrierProductSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.zh-Hant.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.zh-Hant.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TCPIPComForm.resx">
+      <DependentUpon>TCPIPComForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TCPIPComForm.zh-Hant.resx">
+      <DependentUpon>TCPIPComForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UPHCalculate.resx">
+      <DependentUpon>UPHCalculate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VacuumSettingForm.resx">
+      <DependentUpon>VacuumSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VacuumSettingForm.zh-Hant.resx">
+      <DependentUpon>VacuumSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BoatModule\BoatModule.csproj">
+      <Project>{a5618aad-9580-4832-a07a-19aaa62c835f}</Project>
+      <Name>BoatModule</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TA2000Modules\TA2000Module.csproj">
+      <Project>{6a55eb6d-c696-4a96-a171-74e87de71c7a}</Project>
+      <Name>TA2000Module</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

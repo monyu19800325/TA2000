@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{399B3540-375A-4A40-981B-F659D112FDDA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BoatModule</RootNamespace>
+    <AssemblyName>BoatModule</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0_Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>..\..\..\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CalibrationH24XL">
+      <HintPath>..\..\..\HTALibs\Calibration\Debug\CalibrationH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow">
+      <HintPath>..\..\..\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Mvvm.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\HTALibs\DevExpress\Release\DevExpress.Mvvm.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\HTALibs\DevExpress\Release\DevExpress.Utils.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\HTALibs\DevExpress\Release\DevExpress.XtraEditors.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\..\..\HTALibs\Halcon\24\halcondotnetxl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.Com">
+      <HintPath>..\..\..\HTALibs\HTA.Com\Debug\HTA.Com.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.ContainerH24XL">
+      <HintPath>..\..\..\HTALibs\Hta.Container\Debug\Hta.ContainerH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase">
+      <HintPath>..\..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.SecsBase">
+      <HintPath>..\..\..\HTALibs\HTA.SecsBase\Debug\HTA.SecsBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.TrayModuleH24XL">
+      <HintPath>..\..\..\HTALibs\HTA.Module\Debug\Hta.TrayModuleH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTALightServer">
+      <HintPath>..\..\..\HTALibs\LightServer\Debug\HTALightServer.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachineH24XL">
+      <HintPath>..\..\..\HTALibs\HTA.Machine\Debug\HTAMachineH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IFramerH24XL">
+      <HintPath>..\..\..\HTALibs\IFramer\Debug\IFramerH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImageShowerH24XL">
+      <HintPath>..\..\..\HTALibs\ImageShower\Debug\ImageShowerH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="InspectionFlowH24XL">
+      <HintPath>..\..\..\HTALibs\InspectionFlow\Debug\InspectionFlowH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ITrigger">
+      <HintPath>..\..\..\HTALibs\TriggerServer\Debug\ITrigger.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommonH24XL">
+      <HintPath>..\..\..\HTALibs\HTA.Module\Debug\ModuleCommonH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ObjectDraw">
+      <HintPath>..\..\..\HTALibs\DrawObject\Debug\ObjectDraw.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UtilityH24XL">
+      <HintPath>..\..\..\HTALibs\Utility\Debug\UtilityH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VisionController2H24XL">
+      <HintPath>..\..\..\HTALibs\VisionController2.0\Debug\VisionController2H24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\BoatModule\BoatGlobalSettingForm.cs">
+      <Link>BoatGlobalSettingForm.cs</Link>
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="..\..\BoatModule\BoatGlobalSettingForm.designer.cs">
+      <Link>BoatGlobalSettingForm.designer.cs</Link>
+      <DependentUpon>BoatGlobalSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\BoatModule\BoatLayoutSettingForm.cs">
+      <Link>BoatLayoutSettingForm.cs</Link>
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="..\..\BoatModule\BoatLayoutSettingForm.designer.cs">
+      <Link>BoatLayoutSettingForm.designer.cs</Link>
+      <DependentUpon>BoatLayoutSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\BoatModule\BoatModule.cs">
+      <Link>BoatModule.cs</Link>
+    </Compile>
+    <Compile Include="..\..\BoatModule\ProductMeasureTool.cs">
+      <Link>ProductMeasureTool.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\BoatModule\ProductMeasureTool.Designer.cs">
+      <Link>ProductMeasureTool.Designer.cs</Link>
+      <DependentUpon>ProductMeasureTool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\BoatModule\BoatGlobalSettingForm.resx">
+      <Link>BoatGlobalSettingForm.resx</Link>
+      <DependentUpon>BoatGlobalSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\BoatModule\BoatLayoutSettingForm.resx">
+      <Link>BoatLayoutSettingForm.resx</Link>
+      <DependentUpon>BoatLayoutSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\BoatModule\BoatLayoutSettingForm.zh-Hant.resx">
+      <Link>BoatLayoutSettingForm.zh-Hant.resx</Link>
+      <DependentUpon>BoatLayoutSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\BoatModule\ProductMeasureTool.resx">
+      <Link>ProductMeasureTool.resx</Link>
+      <DependentUpon>ProductMeasureTool.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TA2100Modules\TA2000Module.csproj">
+      <Project>{dce03390-c3b0-4495-b3c5-e259d0d6dca7}</Project>
+      <Name>TA2000Module</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

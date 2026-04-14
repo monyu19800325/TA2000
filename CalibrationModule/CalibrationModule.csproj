@@ -1,0 +1,323 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4D569960-1996-448F-8610-F1CF3FBB6357}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CalibrationModule</RootNamespace>
+    <AssemblyName>CalibrationModule</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>D:\HTASource\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CalibrationForm, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\CalibrationForm\Debug\CalibrationForm.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CalibrationH20, Version=1.0.2.304, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\Calibration\Debug\CalibrationH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\HTASource\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.Desktop.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.Desktop.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Mvvm.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Mvvm.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v21.2.Core, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Printing.v21.2.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Utils.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraBars.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.XtraEditors.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.Container">
+      <HintPath>..\..\HTALibs\Hta.Container\Debug\Hta.Container.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.FSM, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Machine\Debug\HTA.FSM.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTALightServer, Version=1.0.1.329, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\LightServer\Debug\HTALightServer.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachine">
+      <HintPath>D:\HTASource\HTALibs\HTA.Machine\Debug\HTAMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IFramerH20, Version=3.0.0.125, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\IFramer\Debug\IFramerH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImageShowerH20, Version=1.0.2.1215, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\ImageShower\Debug\ImageShowerH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="InspectionFlowH20, Version=2.0.3.307, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\InspectionFlow\Debug\InspectionFlowH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ITrigger, Version=1.0.0.711, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\TriggerServer\Debug\ITrigger.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommon, Version=1.0.2026.122, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\ModuleCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ObjectDraw">
+      <HintPath>..\..\HTALibs\DrawObject\ObjectDraw.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UtilityH20, Version=1.0.4.324, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\Utility\Debug\UtilityH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VisionController2H20, Version=2.0.0.3040, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\VisionController2.0\Debug\VisionController2H20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CalibrationControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CalibrationControlForm.Designer.cs">
+      <DependentUpon>CalibrationControlForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CalibrationControlViewModel.cs" />
+    <Compile Include="CalibrationModule.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CalibrationModule.Designer.cs">
+      <DependentUpon>CalibrationModule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CalibrationModule_IO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CrossCenterControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CrossCenterControl.Designer.cs">
+      <DependentUpon>CrossCenterControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CrossCenterControlViewModel.cs" />
+    <Compile Include="LaserCalibControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LaserCalibControl.Designer.cs">
+      <DependentUpon>LaserCalibControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LaserCalibControlViewModel.cs" />
+    <Compile Include="LightCalibControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LightCalibControl.Designer.cs">
+      <DependentUpon>LightCalibControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LightCalibControlViewModel.cs" />
+    <Compile Include="MosaicControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MosaicControlForm.Designer.cs">
+      <DependentUpon>MosaicControlForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MosaicControlViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CalibrationModuleParam.cs" />
+    <Compile Include="Properties\Resource.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resource.zh-Hant.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource.zh-Hant.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Pxl3DCalibControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Pxl3DCalibControl.Designer.cs">
+      <DependentUpon>Pxl3DCalibControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Pxl3DCalibControlViewModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CalibrationControlForm.resx">
+      <DependentUpon>CalibrationControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CalibrationControlForm.zh-Hant.resx">
+      <DependentUpon>CalibrationControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CalibrationModule.resx">
+      <DependentUpon>CalibrationModule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CrossCenterControl.resx">
+      <DependentUpon>CrossCenterControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CrossCenterControl.zh-Hant.resx">
+      <DependentUpon>CrossCenterControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LaserCalibControl.resx">
+      <DependentUpon>LaserCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LaserCalibControl.zh-Hant.resx">
+      <DependentUpon>LaserCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LightCalibControl.resx">
+      <DependentUpon>LightCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LightCalibControl.zh-Hant.resx">
+      <DependentUpon>LightCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MosaicControlForm.resx">
+      <DependentUpon>MosaicControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MosaicControlForm.zh-Hant.resx">
+      <DependentUpon>MosaicControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+    <EmbeddedResource Include="Properties\Resource.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resource.zh-Hant.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.zh-Hant.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pxl3DCalibControl.resx">
+      <DependentUpon>Pxl3DCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pxl3DCalibControl.zh-Hant.resx">
+      <DependentUpon>Pxl3DCalibControl.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\camera.png" />
+    <None Include="Resources\cross.png" />
+    <None Include="Resources\Laser.png" />
+    <Content Include="Resources\mosaic.png" />
+    <None Include="Resources\ShadeCorrection.png" />
+    <Content Include="Resources\street-light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BoatModule\BoatModule.csproj">
+      <Project>{a5618aad-9580-4832-a07a-19aaa62c835f}</Project>
+      <Name>BoatModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\FlowCarrierModule\FlowCarrierModule.csproj">
+      <Project>{3d16c0a5-3647-4390-9dc9-0bb8e23cb04e}</Project>
+      <Name>FlowCarrierModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\InspectionModule\InspectionModule.csproj">
+      <Project>{a6b7aacc-b9b8-4bec-8ffc-86476be65dca}</Project>
+      <Name>InspectionModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TA2000Modules\TA2000Module.csproj">
+      <Project>{6a55eb6d-c696-4a96-a171-74e87de71c7a}</Project>
+      <Name>TA2000Module</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DCE03390-C3B0-4495-B3C5-E259D0D6DCA7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TA2000Module</RootNamespace>
+    <AssemblyName>TA2000Module</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0_Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>..\..\..\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CalibrationH24XL">
+      <HintPath>..\..\..\HTALibs\Calibration\Debug\CalibrationH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow">
+      <HintPath>..\..\..\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="halcondotnetxl">
+      <HintPath>..\..\..\HTALibs\Halcon\24\halcondotnetxl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase">
+      <HintPath>..\..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachineH24XL">
+      <HintPath>..\..\..\HTALibs\HTA.Machine\Debug\HTAMachineH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommonH24XL">
+      <HintPath>..\..\..\HTALibs\HTA.Module\Debug\ModuleCommonH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UtilityH24XL">
+      <HintPath>..\..\..\HTALibs\Utility\Debug\UtilityH24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VisionController2H24XL">
+      <HintPath>..\..\..\HTALibs\VisionController2.0\Debug\VisionController2H24XL.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\TA2000Modules\Enum.cs">
+      <Link>Enum.cs</Link>
+    </Compile>
+    <Compile Include="..\..\TA2000Modules\Request.cs">
+      <Link>Request.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

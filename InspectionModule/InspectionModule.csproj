@@ -1,0 +1,552 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A6B7AACC-B9B8-4BEC-8FFC-86476BE65DCA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>InspectionModule</RootNamespace>
+    <AssemblyName>InspectionModule</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>D:\HTASource\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CalibrationH20">
+      <HintPath>..\..\HTALibs\Calibration\Debug\CalibrationH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CamBarcodeH20">
+      <HintPath>..\..\HTALibs\IBarcode\Debug\CamBarcodeH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CdiAuthorityControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.CdiAuthorityControl\Debug\CdiAuthorityControl.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\HTASource\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.Desktop.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.Desktop.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Data.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Data.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Mvvm.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Mvvm.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v21.2.Core, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Printing.v21.2.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.Utils.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\DevExpress\Release\DevExpress.XtraEditors.v21.2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraGrid.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraLayout.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DevExpress.XtraPrinting.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FramerStaticMemoryH20">
+      <HintPath>..\..\HTALibs\IFramer\Debug\FramerStaticMemoryH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="halcondotnet">
+      <HintPath>..\..\HTALibs\Halcon\20.11\halcondotnet.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.Com">
+      <HintPath>..\..\HTALibs\HTA.Com\Debug\HTA.Com.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.Container">
+      <HintPath>..\..\HTALibs\Hta.Container\Debug\Hta.Container.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.FSM">
+      <HintPath>..\..\HTALibs\HTA.Machine\Debug\HTA.FSM.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.Motion3">
+      <HintPath>..\..\HTALibs\Hta.Motion3\Debug\HTA.Motion3.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase">
+      <HintPath>..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.SecsBase">
+      <HintPath>..\..\HTALibs\HTA.SecsBase\Debug\HTA.SecsBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.TrayModule">
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\Hta.TrayModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTALightServer">
+      <HintPath>..\..\HTALibs\LightServer\Debug\HTALightServer.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachine">
+      <HintPath>D:\HTASource\HTALibs\HTA.Machine\Debug\HTAMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IBarcode">
+      <HintPath>..\..\HTALibs\IBarcode\Debug\IBarcode.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="IFramerH20">
+      <HintPath>..\..\HTALibs\IFramer\Debug\IFramerH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImageExtendInterfaceH20">
+      <HintPath>..\..\HTALibs\ImageExtendInterface\Debug\ImageExtendInterfaceH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ImageShowerH20">
+      <HintPath>..\..\HTALibs\ImageShower\Debug\ImageShowerH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="InspectionFlowH20">
+      <HintPath>..\..\HTALibs\InspectionFlow\Debug\InspectionFlowH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ITrigger">
+      <HintPath>..\..\HTALibs\TriggerServer\Debug\ITrigger.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="LevelData1H20">
+      <HintPath>..\..\HTALibs\LevelData1\Debug\LevelData1H20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MachineUtility">
+      <HintPath>..\..\HTALibs\HTA.MachineUtlity\Debug\MachineUtility.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommon, Version=1.0.2026.122, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\ModuleCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\Json\Debug\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ObjectDraw">
+      <HintPath>..\..\HTALibs\DrawObject\ObjectDraw.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\System\Debug\System.ValueTuple.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UtilityH20">
+      <HintPath>..\..\HTALibs\Utility\Debug\UtilityH20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="VisionController2H20">
+      <HintPath>..\..\HTALibs\VisionController2.0\Debug\VisionController2H20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BurningReport.cs" />
+    <Compile Include="InspectGlobalSetting.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InspectGlobalSetting.Designer.cs">
+      <DependentUpon>InspectGlobalSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InspectGlobalSettingViewModel.cs" />
+    <Compile Include="InspectionModuleExtend.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InspectionModule_IO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InspectProductSetting.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InspectProductSetting.Designer.cs">
+      <DependentUpon>InspectProductSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InspectProductSettingViewModel.cs" />
+    <Compile Include="LaserTeachControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LaserTeachControl.Designer.cs">
+      <DependentUpon>LaserTeachControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LaserTeachControlViewModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="InspectionModule.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="InspectionModule.Designer.cs">
+      <DependentUpon>InspectionModule.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InspectionModuleParam.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.zh-Hant.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.zh-Hant.resx</DependentUpon>
+    </Compile>
+    <Compile Include="SummaryReport.cs" />
+    <Compile Include="ToolForm\BarcodeTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\BarcodeTestForm.Designer.cs">
+      <DependentUpon>BarcodeTestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\BarcodeTestFormViewModel.cs" />
+    <Compile Include="ToolForm\ComponentReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\ComponentReportForm.Designer.cs">
+      <DependentUpon>ComponentReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\CurrentImageView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\CurrentImageView.Designer.cs">
+      <DependentUpon>CurrentImageView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\GoldenReport.cs" />
+    <Compile Include="ToolForm\GoldenReportHtml.cs" />
+    <Compile Include="ToolForm\StatisticForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\StatisticForm.Designer.cs">
+      <DependentUpon>StatisticForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\TestMosaicForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\TestMosaicForm.Designer.cs">
+      <DependentUpon>TestMosaicForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\TestMosaicViewModel.cs" />
+    <Compile Include="ToolForm\UI\AdjustMapRegion.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\AdjustMapRegion.Designer.cs">
+      <DependentUpon>AdjustMapRegion.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\AdjustMapRegionViewModel.cs" />
+    <Compile Include="ToolForm\UI\AdjustPartPosForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\AdjustPartPosForm.Designer.cs">
+      <DependentUpon>AdjustPartPosForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\BigMapShowView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\BigMapShowView.Designer.cs">
+      <DependentUpon>BigMapShowView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\ComponentReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\ComponentReportForm.Designer.cs">
+      <DependentUpon>ComponentReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\ContainerButtonForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\ContainerButtonForm.Designer.cs">
+      <DependentUpon>ContainerButtonForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\FailLinkForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\FailLinkForm.Designer.cs">
+      <DependentUpon>FailLinkForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\FocusTool.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\FocusTool.Designer.cs">
+      <DependentUpon>FocusTool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\FocusToolViewModel.cs" />
+    <Compile Include="ToolForm\UI\Golden3DTeachControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\Golden3DTeachControl.Designer.cs">
+      <DependentUpon>Golden3DTeachControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\Golden3DTeachControlViewModel.cs" />
+    <Compile Include="ToolForm\UI\GoldenTeachControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\GoldenTeachControl.Designer.cs">
+      <DependentUpon>GoldenTeachControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\GoldenTeachControlViewModel.cs" />
+    <Compile Include="ToolForm\UI\LaserTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\LaserTestForm.Designer.cs">
+      <DependentUpon>LaserTestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\LaserTestViewModel.cs" />
+    <Compile Include="ToolForm\UI\ProductSettingTool.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\ProductSettingTool.Designer.cs">
+      <DependentUpon>ProductSettingTool.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\ProductSettingToolViewModel.cs" />
+    <Compile Include="ToolForm\UI\StatisticTableForm2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\StatisticTableForm2.Designer.cs">
+      <DependentUpon>StatisticTableForm2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachControlWizardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachControlWizardForm.Designer.cs">
+      <DependentUpon>TeachControlWizardForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachControlWizardViewModel.cs" />
+    <Compile Include="ToolForm\UI\TeachForm\TeachControlWizardForm3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachForm\TeachControlWizardForm3.Designer.cs">
+      <DependentUpon>TeachControlWizardForm3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachForm\TeachControlWizardViewModel3.cs" />
+    <Compile Include="ToolForm\UI\TeachTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachTestForm.Designer.cs">
+      <DependentUpon>TeachTestForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolForm\UI\TeachTestViewModel.cs" />
+    <Compile Include="ToolForm\UI\WizardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolForm\UI\WizardForm.Designer.cs">
+      <DependentUpon>WizardForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrayReport.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="InspectGlobalSetting.resx">
+      <DependentUpon>InspectGlobalSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InspectGlobalSetting.zh-Hant.resx">
+      <DependentUpon>InspectGlobalSetting.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InspectionModule.resx">
+      <DependentUpon>InspectionModule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InspectProductSetting.resx">
+      <DependentUpon>InspectProductSetting.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InspectProductSetting.zh-Hant.resx">
+      <DependentUpon>InspectProductSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LaserTeachControl.resx">
+      <DependentUpon>LaserTeachControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LaserTeachControl.zh-Hant.resx">
+      <DependentUpon>LaserTeachControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.zh-Hant.resx">
+      <SubType>Designer</SubType>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.zh-Hant.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\BarcodeTestForm.resx">
+      <DependentUpon>BarcodeTestForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\BarcodeTestForm.zh-Hant.resx">
+      <DependentUpon>BarcodeTestForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\ComponentReportForm.resx">
+      <DependentUpon>ComponentReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\CurrentImageView.resx">
+      <DependentUpon>CurrentImageView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\StatisticForm.resx">
+      <DependentUpon>StatisticForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\TestMosaicForm.resx">
+      <DependentUpon>TestMosaicForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\AdjustMapRegion.resx">
+      <DependentUpon>AdjustMapRegion.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\AdjustPartPosForm.resx">
+      <DependentUpon>AdjustPartPosForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\BigMapShowView.resx">
+      <DependentUpon>BigMapShowView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\ComponentReportForm.resx">
+      <DependentUpon>ComponentReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\ContainerButtonForm.resx">
+      <DependentUpon>ContainerButtonForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\FailLinkForm.resx">
+      <DependentUpon>FailLinkForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\FocusTool.resx">
+      <DependentUpon>FocusTool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\FocusTool.zh-Hant.resx">
+      <DependentUpon>FocusTool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\Golden3DTeachControl.resx">
+      <DependentUpon>Golden3DTeachControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\GoldenTeachControl.resx">
+      <DependentUpon>GoldenTeachControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\GoldenTeachControl.zh-Hant.resx">
+      <DependentUpon>GoldenTeachControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\LaserTestForm.resx">
+      <DependentUpon>LaserTestForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\ProductSettingTool.resx">
+      <DependentUpon>ProductSettingTool.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\StatisticTableForm2.resx">
+      <DependentUpon>StatisticTableForm2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\TeachControlWizardForm.resx">
+      <DependentUpon>TeachControlWizardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\TeachForm\TeachControlWizardForm3.resx">
+      <DependentUpon>TeachControlWizardForm3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\TeachTestForm.resx">
+      <DependentUpon>TeachTestForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolForm\UI\WizardForm.resx">
+      <DependentUpon>WizardForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\3d-printer.png" />
+    <Content Include="Resources\data-analysis.png" />
+    <Content Include="Resources\Double_Arrow.png" />
+    <None Include="Resources\up-down.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AroundIOModule\AroundIOModule.csproj">
+      <Project>{e163f3bc-a8f4-44a3-a10e-811b90af98ca}</Project>
+      <Name>AroundIOModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\BoatModule\BoatModule.csproj">
+      <Project>{a5618aad-9580-4832-a07a-19aaa62c835f}</Project>
+      <Name>BoatModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TA2000Modules\TA2000Module.csproj">
+      <Project>{6a55eb6d-c696-4a96-a171-74e87de71c7a}</Project>
+      <Name>TA2000Module</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

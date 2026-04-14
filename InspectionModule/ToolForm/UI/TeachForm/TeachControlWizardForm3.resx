@@ -1,0 +1,1456 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="LC_ComponentName.TabIndex" type="System.Int32, mscorlib">
+    <value>24</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="TE_CaptureName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>308, 20</value>
+  </data>
+  <data name="&gt;&gt;Btn_GetProduct.Name" xml:space="preserve">
+    <value>Btn_GetProduct</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectCap.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_SetUserDefinedName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>54, 23</value>
+  </data>
+  <data name="LC_SelectMap.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="treeView1.ImageIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;LC_MosaicPartIndex.Name" xml:space="preserve">
+    <value>LC_MosaicPartIndex</value>
+  </data>
+  <data name="&gt;&gt;labelControl2.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="labelControl5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>31, 14</value>
+  </data>
+  <data name="&gt;&gt;Btn_MovePartPos.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_GetProduct.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="Btn_DeleteComponent.Location" type="System.Drawing.Point, System.Drawing">
+    <value>363, 23</value>
+  </data>
+  <data name="LC_SelectMap.Text" xml:space="preserve">
+    <value>Select Map</value>
+  </data>
+  <data name="SaveProductBtn.Text" xml:space="preserve">
+    <value>Save product file</value>
+  </data>
+  <data name="ProductRefreshBtn.Size" type="System.Drawing.Size, System.Drawing">
+    <value>24, 24</value>
+  </data>
+  <data name="&gt;&gt;labelControl10.Name" xml:space="preserve">
+    <value>labelControl10</value>
+  </data>
+  <data name="&gt;&gt;Btn_TheMapIndexCapture.Parent" xml:space="preserve">
+    <value>MapPage</value>
+  </data>
+  <data name="LC_MosaicPartIndex.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteCapture.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LUE_MosaicPartIndex.Name" xml:space="preserve">
+    <value>LUE_MosaicPartIndex</value>
+  </data>
+  <data name="PosPage.Text" xml:space="preserve">
+    <value>Position Setting</value>
+  </data>
+  <data name="&gt;&gt;PosPage.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="xtraTabControl1.TabIndex" type="System.Int32, mscorlib">
+    <value>32</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeletePosition.Name" xml:space="preserve">
+    <value>Btn_DeletePosition</value>
+  </data>
+  <data name="labelControl4.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="&gt;&gt;OriginPage.Name" xml:space="preserve">
+    <value>OriginPage</value>
+  </data>
+  <data name="&gt;&gt;labelControl9.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="labelControl10.Size" type="System.Drawing.Size, System.Drawing">
+    <value>105, 14</value>
+  </data>
+  <data name="&gt;&gt;LUE_Vel.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="xtraTabControl1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>376, 91</value>
+  </data>
+  <data name="&gt;&gt;Btn_ExpandAll.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="LC_SelectPos.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="&gt;&gt;xtraTabControl1.Name" xml:space="preserve">
+    <value>xtraTabControl1</value>
+  </data>
+  <data name="&gt;&gt;groupControl4.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;labelControl5.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;Btn_SetUserDefinedName.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_TheMapIndexCapture.Name" xml:space="preserve">
+    <value>Btn_TheMapIndexCapture</value>
+  </data>
+  <data name="CapPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>491, 462</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustLight.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="Btn_AdjustPartPos.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 143</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustPartPos.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;Btn_Capture.Parent" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="&gt;&gt;LC_MosaicPartIndex.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_Capture.Size" type="System.Drawing.Size, System.Drawing">
+    <value>354, 35</value>
+  </data>
+  <data name="LUE_Y.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 26</value>
+  </data>
+  <data name="&gt;&gt;Btn_ExpandAll.Parent" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="&gt;&gt;Btn_SetUserDefinedName.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="Btn_Capture.Text" xml:space="preserve">
+    <value>Capture All Teach Image</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteComponent.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LUE_Vel.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;TE_CaptureName.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.TextEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="labelControl9.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="labelControl1.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="Btn_DeleteCapture.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 23</value>
+  </data>
+  <data name="&gt;&gt;treeView1.Parent" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="&gt;&gt;labelControl2.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_MovePartPos.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 105</value>
+  </data>
+  <data name="Btn_GetProduct.Size" type="System.Drawing.Size, System.Drawing">
+    <value>119, 43</value>
+  </data>
+  <data name="labelControl1.Text" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="Btn_DeleteComponent.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="&gt;&gt;CapPage.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;TE_StandardName.Name" xml:space="preserve">
+    <value>TE_StandardName</value>
+  </data>
+  <data name="Btn_MovePartPos.Text" xml:space="preserve">
+    <value>移動組圖位置(分區位置)</value>
+  </data>
+  <data name="TreeViewImage.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACg
+        CwAAAk1TRnQBSQFMAgEBBgEAATABAgFIAQIBEAEAARABAAT/AQkBEAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
+        AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
+        AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
+        AWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHMAgABMwH/AgABZgMAAWYBMwIAAmYCAAFm
+        AZkCAAFmAcwCAAFmAf8CAAGZAwABmQEzAgABmQFmAgACmQIAAZkBzAIAAZkB/wIAAcwDAAHMATMCAAHM
+        AWYCAAHMAZkCAALMAgABzAH/AgAB/wFmAgAB/wGZAgAB/wHMAQABMwH/AgAB/wEAATMBAAEzAQABZgEA
+        ATMBAAGZAQABMwEAAcwBAAEzAQAB/wEAAf8BMwIAAzMBAAIzAWYBAAIzAZkBAAIzAcwBAAIzAf8BAAEz
+        AWYCAAEzAWYBMwEAATMCZgEAATMBZgGZAQABMwFmAcwBAAEzAWYB/wEAATMBmQIAATMBmQEzAQABMwGZ
+        AWYBAAEzApkBAAEzAZkBzAEAATMBmQH/AQABMwHMAgABMwHMATMBAAEzAcwBZgEAATMBzAGZAQABMwLM
+        AQABMwHMAf8BAAEzAf8BMwEAATMB/wFmAQABMwH/AZkBAAEzAf8BzAEAATMC/wEAAWYDAAFmAQABMwEA
+        AWYBAAFmAQABZgEAAZkBAAFmAQABzAEAAWYBAAH/AQABZgEzAgABZgIzAQABZgEzAWYBAAFmATMBmQEA
+        AWYBMwHMAQABZgEzAf8BAAJmAgACZgEzAQADZgEAAmYBmQEAAmYBzAEAAWYBmQIAAWYBmQEzAQABZgGZ
+        AWYBAAFmApkBAAFmAZkBzAEAAWYBmQH/AQABZgHMAgABZgHMATMBAAFmAcwBmQEAAWYCzAEAAWYBzAH/
+        AQABZgH/AgABZgH/ATMBAAFmAf8BmQEAAWYB/wHMAQABzAEAAf8BAAH/AQABzAEAApkCAAGZATMBmQEA
+        AZkBAAGZAQABmQEAAcwBAAGZAwABmQIzAQABmQEAAWYBAAGZATMBzAEAAZkBAAH/AQABmQFmAgABmQFm
+        ATMBAAGZATMBZgEAAZkBZgGZAQABmQFmAcwBAAGZATMB/wEAApkBMwEAApkBZgEAA5kBAAKZAcwBAAKZ
+        Af8BAAGZAcwCAAGZAcwBMwEAAWYBzAFmAQABmQHMAZkBAAGZAswBAAGZAcwB/wEAAZkB/wIAAZkB/wEz
+        AQABmQHMAWYBAAGZAf8BmQEAAZkB/wHMAQABmQL/AQABzAMAAZkBAAEzAQABzAEAAWYBAAHMAQABmQEA
+        AcwBAAHMAQABmQEzAgABzAIzAQABzAEzAWYBAAHMATMBmQEAAcwBMwHMAQABzAEzAf8BAAHMAWYCAAHM
+        AWYBMwEAAZkCZgEAAcwBZgGZAQABzAFmAcwBAAGZAWYB/wEAAcwBmQIAAcwBmQEzAQABzAGZAWYBAAHM
+        ApkBAAHMAZkBzAEAAcwBmQH/AQACzAIAAswBMwEAAswBZgEAAswBmQEAA8wBAALMAf8BAAHMAf8CAAHM
+        Af8BMwEAAZkB/wFmAQABzAH/AZkBAAHMAf8BzAEAAcwC/wEAAcwBAAEzAQAB/wEAAWYBAAH/AQABmQEA
+        AcwBMwIAAf8CMwEAAf8BMwFmAQAB/wEzAZkBAAH/ATMBzAEAAf8BMwH/AQAB/wFmAgAB/wFmATMBAAHM
+        AmYBAAH/AWYBmQEAAf8BZgHMAQABzAFmAf8BAAH/AZkCAAH/AZkBMwEAAf8BmQFmAQAB/wKZAQAB/wGZ
+        AcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHMAWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEz
+        AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
+        AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
+        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/wIADv8BAAH0AewB8y0A
+        AfIOAAETARQBAAEOAfMsAAEPDwAB7wIAAQ4B8zEAAW0B8wH0AQcBDgYAAe8CAAEOAfIvAAHxBAAB/wER
+        BgAB9wIAAQ4B8wQAAf8oAAFtAQAB/wHsARQB8wEAAf8HAAH3AgABDgHzAgAB9AFtAQcB/yYAAfMBAAHt
+        AwAB/wEAAQ8HAAH3AgABDgHzAQAB/wHsAfInAAH0AQABFAMAAf8BAAERCAAB9wEAAeoB9wHzAQAB/ygA
+        AQcBAAHzAgABFAwAAQcBkgEAAQ4B8wIAAf8B7yUAAQ4B/wEAAv8CAAEHCwAB9wIAAQ4C/wFtAQABByUA
+        AREB/wMAAQcNAAH3AQAB7AH/AQAB9AHsAf8gAAHsBgABEAERDQAB8wH/AQAB8wH/AwAB/yEAAf8B7QFD
+        ARAJAAFDARQB8wUAAf8BbQHwKwAB/wgAAe8HAAH0AeoCAAHvKwABBwdDAf8IAAH/ARQB7wH/PQAB8QH/
+        QQAB8QYAEP8FAAHNAf8cAAH0AgAB9AYAAf8CABASBQAB3AHNDQAB9AJ4AZkKAAETAgAB7AQAAQ4BQwIA
+        Af8BABASBgAB1QHNCwAB9AR4AZkJAAEQCwAB/wEAEBIB8wH/BQAB1AHNAQAB/wcAAfQGeAGZCAAB9A0A
+        BRIGzwGuBBIBCQHNAfMFAAPNAQkFAAH0CHgBmQcAAfMEAAHyAf8B7AYAEBIBAAHzAc0B3AMAAdwEzQEJ
+        AwAB/wV4AZkEeAGZBAAB/wESCAAB7AQAAfEFEgauAeoEEgIAAf8BzQHUAQAB1QbNAQkCAAV4AgABCAR4
+        AZkIAAEOBAAB/wUABRIEbQcSBAAKzQEJAQABCAN4BAABCAR4AZkCAAEVCQAB8wUAEBIFAArNAQkBAAIb
+        BgABCAR4AZkDAAFtAwABvAcAAfMBABASBAABGQrNAdQKAAEIBHgBmQ0AAUMCABASBQAIzQHOAQAB1QsA
+        AQgEeAIAAewNAAgSCJ0GAAbNAdUBAAHzAf8MAAEIA3gOAAHxAQAHEgG7CJ0HAATNAdQBAAH/Ad0OAAEb
+        AXgB/wIAAf8BDgHyAQAB7AMAAv8BbQESAgAGEgHrCbQIAAPNAQAB9AEJGwAB7AYABhIKtAkAAc0B3QEJ
+        Af8aAAHtAewhAAHzBQABQgFNAT4HAAE+AwABKAMAAUADAAEgAwABAQEAAQEGAAEBFgAD/wEAAYABAQEf
+        Af8GAAEPAf8GAAEHAf8GAAGDAf8EAAEDAcABwQHvBAABBAEgAeABwwQAAQQBEAHwAUcEAAEEARAB+AEv
+        BAABBAEwAfwBGQQAAQIBYAH+BQABAQHAAf8BCAYAAfwBnQYAAfgB/wQAAeABBwHwAX8EAAHwAQcB+AF/
+        BAAC/wH8Af8EAAL/Af4BPwIAAfkD/wHsATsCAAH5Af8B8AH/AcABAQIAAfwB/wHgAX8BwAEBAgABPgFf
+        AcABPwHAAQMCAAEfAQ8BgAEfAcABAwIAAY4BBwEAAQ8BAwHAAgABxAEDAQYBBwEDAcACAAHwAQEBDwID
+        AcACAAH4AQABnwGBAsECAAHwAQAB/wHAAeABAwIAAfgBAgH/AeABwAEDAgAB/AEEAf8B8AHAAQECAAH+
+        AQkB/wH4AcQBAwIAAf8BEwL/Af4BPwIAAf8BhwL/Af4BfwP/Ad8WAAs=
+</value>
+  </data>
+  <data name="TE_UserDefinedName.TabIndex" type="System.Int32, mscorlib">
+    <value>23</value>
+  </data>
+  <data name="Btn_DeleteCapture.TabIndex" type="System.Int32, mscorlib">
+    <value>27</value>
+  </data>
+  <data name="Btn_ExpandAll.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="&gt;&gt;Btn_Capture.Name" xml:space="preserve">
+    <value>Btn_Capture</value>
+  </data>
+  <data name="&gt;&gt;ProductRefreshBtn.Name" xml:space="preserve">
+    <value>ProductRefreshBtn</value>
+  </data>
+  <data name="groupControl2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 96</value>
+  </data>
+  <data name="&gt;&gt;groupControl2.Name" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="Btn_AdjustLight.Text" xml:space="preserve">
+    <value>Adjust Light</value>
+  </data>
+  <data name="TE_UserDefinedName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>122, 79</value>
+  </data>
+  <data name="groupControl4.TabIndex" type="System.Int32, mscorlib">
+    <value>25</value>
+  </data>
+  <data name="&gt;&gt;TE_CaptureName.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="LC_SelectMap.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 20</value>
+  </data>
+  <data name="OriginPage.Text" xml:space="preserve">
+    <value>OriginPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_TheMapIndexCapture.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <assembly alias="DevExpress.Utils.v21.2" name="DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+  <data name="LUE_Vel.Properties.Buttons" type="DevExpress.XtraEditors.Controls.ButtonPredefines, DevExpress.Utils.v21.2">
+    <value>Combo</value>
+  </data>
+  <data name="&gt;&gt;xtraTabControl1.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectPos.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LC_ComponentName.Text" xml:space="preserve">
+    <value>Component Name</value>
+  </data>
+  <data name="Btn_SetUserDefinedName.TabIndex" type="System.Int32, mscorlib">
+    <value>27</value>
+  </data>
+  <data name="ShowPanelTabControl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 0</value>
+  </data>
+  <data name="ShowPanelPage.Text" xml:space="preserve">
+    <value>ShowPanelPage</value>
+  </data>
+  <data name="groupControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>492, 56</value>
+  </data>
+  <data name="groupControl4.AppearanceCaption.BackColor2" type="System.Drawing.Color, System.Drawing">
+    <value>Cyan</value>
+  </data>
+  <data name="Btn_MovePartPos.Size" type="System.Drawing.Size, System.Drawing">
+    <value>165, 23</value>
+  </data>
+  <data name="LC_SelectPos.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 27</value>
+  </data>
+  <data name="&gt;&gt;LUE_X.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;labelControl1.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;groupControl4.Parent" xml:space="preserve">
+    <value>OriginPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_PutProduct.Name" xml:space="preserve">
+    <value>Btn_PutProduct</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>923, 719</value>
+  </data>
+  <data name="&gt;&gt;groupControl1.Parent" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="SaveProductBtn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vQAADr0BR/uQrQAAAh5JREFUOE+Nk09IVFEUxr977nmNI9omHUidbFct2mhFm5zCFjVS0J9hqinFaFML
+        ISQIXNSmzYyNBFFGi8hK+z9DIhYtcppKsYWBi1YTpKsQRCZqU3DiXGYGfJn04OPBvb/vx3nc+wAgGagL
+        LQbDm4tVwYYigHljzPRKIWvnABQAnEb5CdaHJXr/q5yYEtlxcUQAPAdQWw4zn2PmLBF1G2My23rvSKi1
+        Q7mzTlCzdtPPg5klSUyL7Ox7rBuDFTsAZh5m5l5mHgFwa8+1KcfWbtiibBzB9eFi9MGcxHMi2y8M6WLa
+        J3hJRB+Y+QWAgdbzt6X7s8jeGzNiA1VLFcHx9yItPYMqGAfQXo61NmWMeW2tvaJ7LT035VheRKeuaWz+
+        VREcGvshkf4JaWqLSdOuo3+lUd9tMYn05xwbHZ6X6obm706wf+iLdDz85sxds6snnhfHake7TnDgyYLs
+        u1uQrWeS/xVltVMRHHklEklN6PfrGV8u5ZIv5fVCJPVGtFMRHB7/Lbuv5lWQZeY+IvpERDP+MLOKsspq
+        Z7kg7QQ5a21Uz5yZH/ljrY0po+y/BPcA1HmeN+p53pgvo7qnzGqCjN5uIuokoi5fOgFUK7NMoFc5/lak
+        /frH8gSetTZtrR3wRW/oGmWU1Y523c+ktpLgHYB1RJQgopOlnCq9E7qnjLJugvqwdpAMhDYuunGABWPM
+        pDHmmTHm6QqZVEZZ7Wj3D0sUYRUNYnTgAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="&gt;&gt;labelControl10.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LC_MosaicPartIndex.Text" xml:space="preserve">
+    <value>MosaicIndex(分區Index)</value>
+  </data>
+  <data name="&gt;&gt;labelControl1.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="labelControl2.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="labelControl1.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="Btn_AdjustLight.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="groupControl4.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>1, 1, 1, 1</value>
+  </data>
+  <data name="&gt;&gt;labelControl12.Name" xml:space="preserve">
+    <value>labelControl12</value>
+  </data>
+  <data name="labelControl5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 50</value>
+  </data>
+  <data name="&gt;&gt;labelControl12.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;xtraTabControl1.Parent" xml:space="preserve">
+    <value>groupControl2</value>
+  </data>
+  <data name="&gt;&gt;groupControl1.Name" xml:space="preserve">
+    <value>groupControl1</value>
+  </data>
+  <data name="Btn_ExpandAll.Size" type="System.Drawing.Size, System.Drawing">
+    <value>108, 27</value>
+  </data>
+  <data name="Btn_AdjustLight.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 84</value>
+  </data>
+  <data name="&gt;&gt;Btn_Focus.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="OnlySaveParameter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>24, 24</value>
+  </data>
+  <data name="&gt;&gt;CmpPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;PosPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectCap.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LUE_Vel.Properties.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="groupControl4.AppearanceCaption.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="&gt;&gt;toolStrip2.Parent" xml:space="preserve">
+    <value>groupControl1</value>
+  </data>
+  <data name="&gt;&gt;PosPage.Parent" xml:space="preserve">
+    <value>xtraTabControl1</value>
+  </data>
+  <data name="LC_MosaicPartIndex.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 71</value>
+  </data>
+  <data name="&gt;&gt;TE_CaptureName.Parent" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="&gt;&gt;ProductRefreshBtn.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ProductRefreshBtn.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="labelControl9.Size" type="System.Drawing.Size, System.Drawing">
+    <value>84, 14</value>
+  </data>
+  <data name="&gt;&gt;SaveProductBtn.Name" xml:space="preserve">
+    <value>SaveProductBtn</value>
+  </data>
+  <data name="TE_UserDefinedName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>152, 20</value>
+  </data>
+  <data name="&gt;&gt;groupControl4.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.GroupControl, DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LC_MosaicPartIndex.Size" type="System.Drawing.Size, System.Drawing">
+    <value>131, 14</value>
+  </data>
+  <data name="&gt;&gt;Btn_Focus.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="groupControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>1, 1, 1, 1</value>
+  </data>
+  <data name="ProductRefreshBtn.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vQAADr0BR/uQrQAAAGtJREFUOE+9jsENACEIBOVLgVfjNXW1ePGBgXUl+HGT+cgy0hqJqnYEOzRWft5v
+        wYuoeLeI+N4U4DKej/MgwGE4ywV7VHCyfF+woyRIc1UgIn0QHr0gk9hyWcKweUmSMbqLoCqhv/vg2Qj2
+        f1dmOT16nmxUAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="&gt;&gt;labelControl5.Parent" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="groupControl1.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="treeView1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>354, 482</value>
+  </data>
+  <data name="CapPage.Text" xml:space="preserve">
+    <value>Capture Setting</value>
+  </data>
+  <data name="LUE_MosaicPartIndex.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="groupControl2.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="&gt;&gt;Btn_MovePartPos.Name" xml:space="preserve">
+    <value>Btn_MovePartPos</value>
+  </data>
+  <data name="&gt;&gt;labelControl12.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;groupControl2.Parent" xml:space="preserve">
+    <value>OriginPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustPartPos.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelPage.Parent" xml:space="preserve">
+    <value>ShowPanelTabControl</value>
+  </data>
+  <data name="&gt;&gt;labelControl4.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="labelControl2.Text" xml:space="preserve">
+    <value>Row(Y)</value>
+  </data>
+  <data name="Btn_PutProduct.Text" xml:space="preserve">
+    <value>Place Product</value>
+  </data>
+  <data name="&gt;&gt;Btn_TheMapIndexCapture.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_OpenTeach.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;CapPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="FlowRun.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="Btn_GetProduct.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="toolStrip2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>2, 23</value>
+  </data>
+  <data name="ShowPanelTabControl.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectMap.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LC_SelectCap.Size" type="System.Drawing.Size, System.Drawing">
+    <value>120, 19</value>
+  </data>
+  <data name="&gt;&gt;TreeViewImage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ImageList, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MapPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>491, 462</value>
+  </data>
+  <data name="LC_SelectPos.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteComponent.Name" xml:space="preserve">
+    <value>Btn_DeleteComponent</value>
+  </data>
+  <data name="labelControl12.Text" xml:space="preserve">
+    <value>Hint: 所有的Capture都設定完光源後，
+Capture All Teach Image，再來教讀</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeletePosition.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;OriginPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LUE_Y.Name" xml:space="preserve">
+    <value>LUE_Y</value>
+  </data>
+  <data name="groupControl4.Text" xml:space="preserve">
+    <value>Move Product</value>
+  </data>
+  <data name="TE_CaptureName.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectPos.Name" xml:space="preserve">
+    <value>LC_SelectPos</value>
+  </data>
+  <data name="&gt;&gt;Btn_GetProduct.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;LUE_Y.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LookUpEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_TheMapIndexCapture.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 62</value>
+  </data>
+  <data name="&gt;&gt;labelControl9.Name" xml:space="preserve">
+    <value>labelControl9</value>
+  </data>
+  <data name="LC_SelectCap.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="LUE_Y.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectPos.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LUE_MosaicPartIndex.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;TE_UserDefinedName.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="Btn_OpenTeach.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 221</value>
+  </data>
+  <data name="&gt;&gt;LUE_MosaicPartIndex.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectMap.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="LUE_Vel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 26</value>
+  </data>
+  <data name="&gt;&gt;CapPage.Name" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="LUE_X.Location" type="System.Drawing.Point, System.Drawing">
+    <value>56, 38</value>
+  </data>
+  <data name="toolStrip2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>488, 27</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustPartPos.Name" xml:space="preserve">
+    <value>Btn_AdjustPartPos</value>
+  </data>
+  <data name="labelControl2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 20</value>
+  </data>
+  <data name="&gt;&gt;MapPage.Name" xml:space="preserve">
+    <value>MapPage</value>
+  </data>
+  <data name="&gt;&gt;TE_UserDefinedName.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.TextEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LUE_X.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LookUpEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteCapture.Name" xml:space="preserve">
+    <value>Btn_DeleteCapture</value>
+  </data>
+  <data name="Btn_ExpandAll.Text" xml:space="preserve">
+    <value>Expand All</value>
+  </data>
+  <data name="LC_SelectPos.Text" xml:space="preserve">
+    <value>Select Position</value>
+  </data>
+  <data name="Btn_AdjustLight.Size" type="System.Drawing.Size, System.Drawing">
+    <value>90, 23</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustLight.Name" xml:space="preserve">
+    <value>Btn_AdjustLight</value>
+  </data>
+  <data name="labelControl1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>336, 41</value>
+  </data>
+  <data name="&gt;&gt;Btn_PutProduct.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelPage.Name" xml:space="preserve">
+    <value>ShowPanelPage</value>
+  </data>
+  <data name="toolStrip2.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;labelControl4.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="LUE_Y.Properties.Buttons" type="DevExpress.XtraEditors.Controls.ButtonPredefines, DevExpress.Utils.v21.2">
+    <value>Combo</value>
+  </data>
+  <data name="labelControl10.Text" xml:space="preserve">
+    <value>User Defined Name</value>
+  </data>
+  <data name="Btn_ExpandAll.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 26</value>
+  </data>
+  <data name="FlowRun.Text" xml:space="preserve">
+    <value>Test run</value>
+  </data>
+  <data name="&gt;&gt;MapPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelTabControl.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="LUE_Vel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>401, 38</value>
+  </data>
+  <data name="&gt;&gt;labelControl1.Name" xml:space="preserve">
+    <value>labelControl1</value>
+  </data>
+  <data name="LC_ComponentName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 27</value>
+  </data>
+  <data name="&gt;&gt;LUE_Vel.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelPage.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabPage, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LC_SelectMap.Size" type="System.Drawing.Size, System.Drawing">
+    <value>89, 19</value>
+  </data>
+  <data name="labelControl12.TabIndex" type="System.Int32, mscorlib">
+    <value>25</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectMap.Name" xml:space="preserve">
+    <value>LC_SelectMap</value>
+  </data>
+  <data name="&gt;&gt;LC_ComponentName.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;labelControl9.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;FlowRun.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TE_StandardName.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="TE_CaptureName.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="LUE_MosaicPartIndex.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 20</value>
+  </data>
+  <data name="&gt;&gt;TE_UserDefinedName.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;treeView1.Name" xml:space="preserve">
+    <value>treeView1</value>
+  </data>
+  <data name="&gt;&gt;Btn_OpenTeach.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;xtraTabControl1.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="labelControl10.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 82</value>
+  </data>
+  <data name="Btn_DeletePosition.Location" type="System.Drawing.Point, System.Drawing">
+    <value>270, 27</value>
+  </data>
+  <data name="TE_StandardName.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="labelControl9.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 127</value>
+  </data>
+  <data name="Btn_Capture.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 544</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeletePosition.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectPos.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_MovePartPos.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;SaveProductBtn.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Btn_DeletePosition.TabIndex" type="System.Int32, mscorlib">
+    <value>27</value>
+  </data>
+  <data name="&gt;&gt;LUE_Y.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="LC_SelectMap.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="Btn_AdjustPartPos.Text" xml:space="preserve">
+    <value>微調位置(分區才有)</value>
+  </data>
+  <data name="OnlySaveParameter.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vQAADr0BR/uQrQAAAXZJREFUWEftlzFLw0AYhm/RzdXVvUsHcajJnbi4ODr5Lzq4ZxRd2tyJ4K8ori5B
+        ky+Iiog4i3/AScHFWnljo+3FNrkknksOHij50nseGnqljE0sxaOdvhPeey16V4JGdTLe806KiE86v5fk
+        tO0J+YGb+5yupaDLOlGCHpOYDr1KJ2xPyY82aUWJ4Hlcq6aGNa2D9WhJOeEtHD1+/nTcoeVk4LUeFqV7
+        cYXB4Rq9KE57isfdP0FE++mnLDmFJ6s3C0xu0K7+vGwBN/NdOtMHtoCbKREM9YE9giHLXrRLE9AElAiI
+        BpkD5uegGWTvn495AI+7+jGbrq+IX94zhyZgZoDv0il+qHSJ6cIe2EvfPzegjog8eW5AlYgi8kIBwDSi
+        qBwUCgBFI0zkoHAAyIswlQOjADAroowcGAcAPaKsHJQKAGlEFTkoHQAgriIHlQLq4P8Dem160y/aAm78
+        L4j1gS3gZj6PtvSBLeBOvsd4gRobjwMOuFL5J9z5zckXux51AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="&gt;&gt;CmpPage.Name" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;OriginPage.Parent" xml:space="preserve">
+    <value>ShowPanelTabControl</value>
+  </data>
+  <data name="groupControl1.Text" xml:space="preserve">
+    <value>Vision Control Button</value>
+  </data>
+  <data name="Btn_Focus.Location" type="System.Drawing.Point, System.Drawing">
+    <value>19, 182</value>
+  </data>
+  <data name="&gt;&gt;labelControl12.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LUE_Y.Properties.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="&gt;&gt;CmpPage.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="ShowPanelTabControl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>897, 709</value>
+  </data>
+  <data name="Btn_MovePartPos.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="ShowPanelPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>895, 683</value>
+  </data>
+  <data name="&gt;&gt;Btn_Focus.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LUE_Y.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;labelControl10.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;groupControl2.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.GroupControl, DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_DeleteCapture.Location" type="System.Drawing.Point, System.Drawing">
+    <value>255, 14</value>
+  </data>
+  <data name="Btn_PutProduct.Location" type="System.Drawing.Point, System.Drawing">
+    <value>704, 30</value>
+  </data>
+  <data name="treeView1.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="labelControl4.Text" xml:space="preserve">
+    <value>Col(X)</value>
+  </data>
+  <data name="FlowRun.Size" type="System.Drawing.Size, System.Drawing">
+    <value>24, 24</value>
+  </data>
+  <data name="Btn_SetUserDefinedName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>280, 78</value>
+  </data>
+  <data name="TE_StandardName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>101, 124</value>
+  </data>
+  <data name="LUE_MosaicPartIndex.Location" type="System.Drawing.Point, System.Drawing">
+    <value>159, 68</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>TeachControlWizardForm3</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustPartPos.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="&gt;&gt;TE_StandardName.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="labelControl2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>168, 41</value>
+  </data>
+  <data name="Btn_Capture.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="Btn_GetProduct.Text" xml:space="preserve">
+    <value>Pick Product</value>
+  </data>
+  <data name="TE_StandardName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>378, 20</value>
+  </data>
+  <data name="Btn_TheMapIndexCapture.Text" xml:space="preserve">
+    <value>This MapIndex Capture</value>
+  </data>
+  <data name="&gt;&gt;Btn_PutProduct.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_DeletePosition.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 23</value>
+  </data>
+  <data name="Btn_DeleteComponent.Text" xml:space="preserve">
+    <value>Delete Component</value>
+  </data>
+  <data name="&gt;&gt;labelControl1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;Btn_OpenTeach.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="labelControl9.Text" xml:space="preserve">
+    <value>Standard Name</value>
+  </data>
+  <data name="SaveProductBtn.Size" type="System.Drawing.Size, System.Drawing">
+    <value>24, 24</value>
+  </data>
+  <data name="&gt;&gt;labelControl5.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectCap.Parent" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="labelControl5.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="labelControl4.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="Btn_OpenTeach.Size" type="System.Drawing.Size, System.Drawing">
+    <value>90, 23</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelTabControl.Name" xml:space="preserve">
+    <value>ShowPanelTabControl</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelTabControl.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;Btn_ExpandAll.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;labelControl9.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;toolStrip2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;MapPage.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;LUE_Vel.Name" xml:space="preserve">
+    <value>LUE_Vel</value>
+  </data>
+  <data name="&gt;&gt;LUE_X.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;treeView1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TreeView, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MapPage.Parent" xml:space="preserve">
+    <value>xtraTabControl1</value>
+  </data>
+  <data name="&gt;&gt;OnlySaveParameter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectCap.Name" xml:space="preserve">
+    <value>LC_SelectCap</value>
+  </data>
+  <data name="LUE_X.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteCapture.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;LC_MosaicPartIndex.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="PosPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>491, 462</value>
+  </data>
+  <data name="LC_SelectCap.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="groupControl1.AppearanceCaption.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="&gt;&gt;treeView1.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;Btn_GetProduct.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="CmpPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>491, 462</value>
+  </data>
+  <data name="&gt;&gt;toolStrip2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Btn_TheMapIndexCapture.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="&gt;&gt;TE_CaptureName.Name" xml:space="preserve">
+    <value>TE_CaptureName</value>
+  </data>
+  <data name="&gt;&gt;groupControl2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;LUE_X.Name" xml:space="preserve">
+    <value>LUE_X</value>
+  </data>
+  <data name="&gt;&gt;Btn_SetUserDefinedName.Name" xml:space="preserve">
+    <value>Btn_SetUserDefinedName</value>
+  </data>
+  <data name="&gt;&gt;TE_UserDefinedName.Name" xml:space="preserve">
+    <value>TE_UserDefinedName</value>
+  </data>
+  <data name="&gt;&gt;CmpPage.Parent" xml:space="preserve">
+    <value>xtraTabControl1</value>
+  </data>
+  <data name="OnlySaveParameter.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="&gt;&gt;Btn_SetUserDefinedName.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_OpenTeach.Text" xml:space="preserve">
+    <value>Open Teach</value>
+  </data>
+  <data name="&gt;&gt;TE_StandardName.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.TextEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;groupControl1.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 20</value>
+  </data>
+  <data name="&gt;&gt;PosPage.Name" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="&gt;&gt;LC_ComponentName.Name" xml:space="preserve">
+    <value>LC_ComponentName</value>
+  </data>
+  <data name="&gt;&gt;OnlySaveParameter.Name" xml:space="preserve">
+    <value>OnlySaveParameter</value>
+  </data>
+  <data name="Btn_GetProduct.Location" type="System.Drawing.Point, System.Drawing">
+    <value>579, 30</value>
+  </data>
+  <data name="Btn_ExpandAll.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="Btn_Focus.Size" type="System.Drawing.Size, System.Drawing">
+    <value>90, 23</value>
+  </data>
+  <data name="Btn_TheMapIndexCapture.Size" type="System.Drawing.Size, System.Drawing">
+    <value>141, 23</value>
+  </data>
+  <data name="&gt;&gt;LC_SelectMap.Parent" xml:space="preserve">
+    <value>MapPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_MovePartPos.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="&gt;&gt;groupControl1.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.GroupControl, DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelTabControl.Type" xml:space="preserve">
+    <value>DevExpress.XtraTab.XtraTabControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_OpenTeach.Name" xml:space="preserve">
+    <value>Btn_OpenTeach</value>
+  </data>
+  <data name="Btn_OpenTeach.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="treeView1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 56</value>
+  </data>
+  <data name="LUE_X.Properties.Buttons" type="DevExpress.XtraEditors.Controls.ButtonPredefines, DevExpress.Utils.v21.2">
+    <value>Combo</value>
+  </data>
+  <data name="Btn_PutProduct.Size" type="System.Drawing.Size, System.Drawing">
+    <value>132, 43</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>TeachControlWizardForm3</value>
+  </data>
+  <data name="LUE_X.Properties.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="&gt;&gt;FlowRun.Name" xml:space="preserve">
+    <value>FlowRun</value>
+  </data>
+  <data name="Btn_PutProduct.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="Btn_Focus.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="labelControl4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 41</value>
+  </data>
+  <data name="groupControl2.AppearanceCaption.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="TE_CaptureName.Location" type="System.Drawing.Point, System.Drawing">
+    <value>63, 47</value>
+  </data>
+  <data name="&gt;&gt;Btn_Focus.Name" xml:space="preserve">
+    <value>Btn_Focus</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustLight.Parent" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_PutProduct.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;toolStrip2.Name" xml:space="preserve">
+    <value>toolStrip2</value>
+  </data>
+  <data name="LC_ComponentName.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Tahoma, 12pt, style=Bold</value>
+  </data>
+  <data name="groupControl1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>376, 31</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteComponent.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;mvvmContext1.Name" xml:space="preserve">
+    <value>mvvmContext1</value>
+  </data>
+  <data name="TE_StandardName.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;labelControl2.Name" xml:space="preserve">
+    <value>labelControl2</value>
+  </data>
+  <data name="&gt;&gt;LC_ComponentName.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LC_SelectCap.Location" type="System.Drawing.Point, System.Drawing">
+    <value>21, 14</value>
+  </data>
+  <data name="Btn_PutProduct.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;CapPage.Parent" xml:space="preserve">
+    <value>xtraTabControl1</value>
+  </data>
+  <data name="LC_SelectCap.Text" xml:space="preserve">
+    <value>Select Capture</value>
+  </data>
+  <data name="OriginPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>895, 683</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteCapture.Parent" xml:space="preserve">
+    <value>CapPage</value>
+  </data>
+  <data name="groupControl4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 8</value>
+  </data>
+  <data name="&gt;&gt;mvvmContext1.Type" xml:space="preserve">
+    <value>DevExpress.Utils.MVVM.MVVMContext, DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="LUE_Y.Location" type="System.Drawing.Point, System.Drawing">
+    <value>229, 38</value>
+  </data>
+  <data name="labelControl12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 171</value>
+  </data>
+  <data name="groupControl2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>874, 586</value>
+  </data>
+  <data name="Btn_AdjustPartPos.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="Btn_AdjustPartPos.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 23</value>
+  </data>
+  <data name="labelControl12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>205, 28</value>
+  </data>
+  <data name="LC_ComponentName.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 19</value>
+  </data>
+  <data name="&gt;&gt;labelControl4.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="&gt;&gt;LC_MosaicPartIndex.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="SaveProductBtn.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="&gt;&gt;LUE_Vel.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LookUpEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="Btn_Capture.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="labelControl5.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeletePosition.Parent" xml:space="preserve">
+    <value>PosPage</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>7, 14</value>
+  </data>
+  <data name="&gt;&gt;labelControl10.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="OnlySaveParameter.Text" xml:space="preserve">
+    <value>Only Save Paramter</value>
+  </data>
+  <data name="Btn_DeleteComponent.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 23</value>
+  </data>
+  <data name="labelControl4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>45, 20</value>
+  </data>
+  <data name="Btn_Focus.Text" xml:space="preserve">
+    <value>Focus</value>
+  </data>
+  <data name="groupControl2.Text" xml:space="preserve">
+    <value> Teach and Capture Setup</value>
+  </data>
+  <data name="groupControl2.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>1, 1, 1, 1</value>
+  </data>
+  <data name="&gt;&gt;TreeViewImage.Name" xml:space="preserve">
+    <value>TreeViewImage</value>
+  </data>
+  <data name="&gt;&gt;ShowPanelPage.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;Btn_AdjustLight.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.XtraForm, DevExpress.Utils.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="toolStrip2.Text" xml:space="preserve">
+    <value>toolStrip2</value>
+  </data>
+  <data name="xtraTabControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>493, 488</value>
+  </data>
+  <data name="LC_SelectPos.Size" type="System.Drawing.Size, System.Drawing">
+    <value>121, 19</value>
+  </data>
+  <data name="&gt;&gt;labelControl4.Name" xml:space="preserve">
+    <value>labelControl4</value>
+  </data>
+  <data name="ProductRefreshBtn.ToolTipText" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="&gt;&gt;labelControl2.Parent" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <data name="treeView1.SelectedImageIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="Btn_DeletePosition.Text" xml:space="preserve">
+    <value>Delete Position</value>
+  </data>
+  <data name="Btn_DeleteCapture.Text" xml:space="preserve">
+    <value>Delete Capture</value>
+  </data>
+  <data name="Btn_GetProduct.Appearance.Font" type="System.Drawing.Font, System.Drawing">
+    <value>微軟正黑體, 12pt</value>
+  </data>
+  <data name="groupControl4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>874, 83</value>
+  </data>
+  <data name="ProductRefreshBtn.Text" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="&gt;&gt;OriginPage.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;LUE_MosaicPartIndex.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LookUpEdit, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_DeleteComponent.Parent" xml:space="preserve">
+    <value>CmpPage</value>
+  </data>
+  <data name="&gt;&gt;Btn_Capture.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;labelControl5.Name" xml:space="preserve">
+    <value>labelControl5</value>
+  </data>
+  <data name="LUE_X.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 26</value>
+  </data>
+  <data name="FlowRun.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        vQAADr0BR/uQrQAAALxJREFUOE+lk8ENwjAMRR83VuiVA3MwAMN0A5iDNRDjcCwjwA3QixLJpCoS+EuR
+        Gv9nN3ESmGsLHIEzcKvDb2N6i1oBI3AHXgtDT0Z2lnyp0BM4AXtgqMNvY3oysh9FrKoxAbtodNKTkTWn
+        yH25NKt/S26SkTWn9MTmWNElRtm4TRdrkjXn4ETQifuMMvao0LrzZPXNLcfkxGZFxe5fux/IGjc3XyC9
+        hXQT08eoUhdJpa9yK/L3Y4r66Tm/AUo0ZE+WhQuaAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="LUE_MosaicPartIndex.Properties.Buttons" type="DevExpress.XtraEditors.Controls.ButtonPredefines, DevExpress.Utils.v21.2">
+    <value>Combo</value>
+  </data>
+  <data name="Btn_SetUserDefinedName.Text" xml:space="preserve">
+    <value>Set</value>
+  </data>
+  <data name="labelControl10.TabIndex" type="System.Int32, mscorlib">
+    <value>22</value>
+  </data>
+  <data name="&gt;&gt;LC_ComponentName.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.LabelControl, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="labelControl2.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;Btn_Capture.Type" xml:space="preserve">
+    <value>DevExpress.XtraEditors.SimpleButton, DevExpress.XtraEditors.v21.2, Version=21.2.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a</value>
+  </data>
+  <data name="&gt;&gt;Btn_ExpandAll.Name" xml:space="preserve">
+    <value>Btn_ExpandAll</value>
+  </data>
+  <data name="CmpPage.Text" xml:space="preserve">
+    <value>Component Setting</value>
+  </data>
+  <data name="MapPage.Text" xml:space="preserve">
+    <value>Map Setting</value>
+  </data>
+  <data name="&gt;&gt;groupControl4.Name" xml:space="preserve">
+    <value>groupControl4</value>
+  </data>
+  <metadata name="toolStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 54</value>
+  </metadata>
+  <metadata name="TreeViewImage.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>638, 17</value>
+  </metadata>
+  <metadata name="mvvmContext1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>49</value>
+  </metadata>
+</root>

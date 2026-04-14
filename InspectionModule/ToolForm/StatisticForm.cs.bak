@@ -1,0 +1,274 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using DevExpress.XtraEditors;
+using HTA.Utility.Common;
+using DevExpress.Utils.MVVM;
+using HTAMachine.Module;
+using HTAMachine.Machine;
+using static DevExpress.Utils.Menu.DXMenuItemPainter;
+
+namespace TA2000Modules
+{
+    public partial class StatisticForm : Form,IInjectModule
+    {
+        public AllStatisticCounts AllCounts;
+        public MVVMContextFluentAPI<StatisticViewModel> Fluent;
+        public StatisticForm()
+        {
+            InitializeComponent();
+        }
+
+        public void InjectModule(IModule module)
+        {
+            if (module is InspectionModule m)
+            {
+                m.StatisticView.gridView = dataGridView1;
+                dataGridView1.DataSource = m.StatisticView.dataForm;
+            }
+        }
+    }
+
+    public class StatisticViewModel
+    {
+        public AllStatisticCounts AllCounts = new AllStatisticCounts();
+        public BindingList<ViewFormData> dataForm = new BindingList<ViewFormData>();
+        public DataGridView gridView;
+
+        public StatisticViewModel(List<string> failCmpNames,List<string> allCmpNames)
+        {
+            dataForm.Add(new ViewFormData("OverAll", 0, 0,0));
+            AllCounts.ViewFormDatas.Add(new ViewFormData("OverAll", 0, 0, 0));
+            for (int i = 0; i < allCmpNames.Count; i++)
+            {
+                dataForm.Add(new ViewFormData(allCmpNames[i].Replace(" ",""), 0, 0, 0));
+                AllCounts.ViewFormDatas.Add(new ViewFormData(allCmpNames[i].Replace(" ", ""), 0, 0, 0));
+                AllCounts.AllComponentDict.Add(i, allCmpNames[i].Replace(" ", ""));
+            }
+            for (int i = 0; i < failCmpNames.Count; i++)
+            {
+                AllCounts.FailComponentDict.Add(i, failCmpNames[i].Replace(" ", ""));
+            }
+        }
+
+        /// <summary>
+        /// 設定計數到介面上
+        /// </summary>
+        /// <param name="grabInfo"></param>
+        public void SetStatisticCount(GrabInfos grabInfo)
+        {
+            if (gridView?.InvokeRequired == true)
+            {
+                gridView?.Invoke(new Action<GrabInfos>(SetStatisticCount), grabInfo);
+            }
+            else
+            {
+                for (int i = 0; i < grabInfo.FOVInfos.Count; i++)
+                {
+                    for (int j = 0; j < grabInfo.FOVInfos[i].ICs.Count; j++)
+                    {
+                        List<int> alreadyAdd = new List<int>();
+                        if (grabInfo.FOVInfos[i].ICs[j].Result == ProductResultEm.Pass)
+                        {
+                            AllCounts.ViewFormDatas[0].Pass++;
+                            for (int k = 1; k < AllCounts.ViewFormDatas.Count; k++)
+                            {
+                                AllCounts.ViewFormDatas[k].Pass++;
+                            }
+                        }
+                        else if (grabInfo.FOVInfos[i].ICs[j].Result == ProductResultEm.Fail)
+                        {
+                            AllCounts.ViewFormDatas[0].Fail++;
+                        }
+                        else if (grabInfo.FOVInfos[i].ICs[j].Result == ProductResultEm.Invalid)
+                        {
+                            AllCounts.ViewFormDatas[0].Invalid++;
+                        }
+
+                        //先加Invalid
+                        var invalids = grabInfo.FOVInfos[i].ICs[j].Invalid.Distinct().ToList();//index = 0 是影像，所以元件是從1開始算
+                        for (int k = 0; k < invalids.Count - 1; k++)
+                        {
+                            AllCounts.ViewFormDatas[invalids[k] - 1 + 1].Invalid++;//AllCounts.ViewFormDatas[0]是OverAll
+                            alreadyAdd.Add(invalids[k] - 1 + 1);
+                        }
+
+
+                        for (int k = 0; k < grabInfo.FOVInfos[i].ICs[j].FailIndex.Count; k++)
+                        {
+                            var targetName = AllCounts.FailComponentDict[grabInfo.FOVInfos[i].ICs[j].FailIndex[k]];
+                            var target = AllCounts.ViewFormDatas.FirstOrDefault(x => x.Label == targetName);
+                            if(target != null)
+                            {
+                                var index = AllCounts.ViewFormDatas.IndexOf(target);
+                                if (alreadyAdd.Any(x => x == index))
+                                {
+                                    //如果某元件已經有Invalid了，就不加Fail數量
+                                    continue;
+                                }
+                                AllCounts.ViewFormDatas[index].Fail++;//failIndex元件編號是從0開始，AllCounts.ViewFormDatas[0]是OverAll
+                            }
+
+                            
+                        }
+                    }
+                }
+
+                for (int k = 0; k < AllCounts.ViewFormDatas.Count; k++)
+                {
+                    dataForm[k] = AllCounts.ViewFormDatas[k];
+                }
+                
+                dataForm.ResetBindings();
+            }
+        }
+
+        /// <summary>
+        /// 刪除上次的結果(用於重測)
+        /// </summary>
+        /// <param name="icInfo"></param>
+        public void DeleteStatisticOriginResultCount(ICInfo icInfo)
+        {
+            if (gridView?.InvokeRequired == true)
+            {
+                gridView?.Invoke(new Action<ICInfo>(DeleteStatisticOriginResultCount), icInfo);
+            }
+            else
+            {
+                List<int> alreadyAdd = new List<int>();
+                if (icInfo.Result == ProductResultEm.Pass)
+                {
+                    AllCounts.ViewFormDatas[0].Pass--;
+                    for (int k = 1; k < AllCounts.ViewFormDatas.Count; k++)
+                    {
+                        AllCounts.ViewFormDatas[k].Pass--;
+                    }
+                }
+                else if (icInfo.Result == ProductResultEm.Fail)
+                {
+                    AllCounts.ViewFormDatas[0].Fail--;
+                }
+                else if (icInfo.Result == ProductResultEm.Invalid)
+                {
+                    AllCounts.ViewFormDatas[0].Invalid--;
+                }
+
+                //先加Invalid
+                var invalids = icInfo.Invalid.Distinct().ToList();//index = 0 是影像，所以元件是從1開始算
+                for (int k = 0; k < icInfo.Invalid.Count-1; k++)
+                {
+                    //AllCounts.AllComponentDict.TryGetValue(icInfo.Invalid[k], out string value);
+                    //var target = AllCounts.ViewFormDatas.FirstOrDefault(x => x.Label == value);
+                    //target.Invalid--;
+
+                    AllCounts.ViewFormDatas[invalids[k] - 1 + 1].Invalid--;//AllCounts.ViewFormDatas[0]是OverAll
+                    alreadyAdd.Add(invalids[k] - 1 + 1);
+                }
+
+                for (int k = 0; k < icInfo.FailIndex.Count; k++)
+                {
+                    var targetName = AllCounts.FailComponentDict[icInfo.FailIndex[k]];
+                    var target = AllCounts.ViewFormDatas.FirstOrDefault(x => x.Label == targetName);
+                    if (target != null)
+                    {
+                        var index = AllCounts.ViewFormDatas.IndexOf(target);
+                        if (alreadyAdd.Any(x => x == index))
+                        {
+                            //如果某元件已經有Invalid了，就不加Fail數量
+                            continue;
+                        }
+                        AllCounts.ViewFormDatas[index].Fail--;//failIndex元件編號是從0開始，AllCounts.ViewFormDatas[0]是OverAll
+                    }
+
+                    //AllCounts.AllComponentDict.TryGetValue(icInfo.FailIndex[k], out string value);
+                    //var target = AllCounts.ViewFormDatas.FirstOrDefault(x => x.Label == value);
+                    //target.Fail--;
+                }
+
+                for (int k = 0; k < AllCounts.ViewFormDatas.Count; k++)
+                {
+                    dataForm[k] = AllCounts.ViewFormDatas[k];
+                }
+                dataForm.ResetBindings();
+            }
+        }
+        public void InitialCounts()
+        {
+            if (gridView?.InvokeRequired == true)
+            {
+                gridView?.Invoke(new Action(InitialCounts));
+            }
+            else
+            {
+                for (int i = 0; i < AllCounts.ViewFormDatas.Count; i++)
+                {
+                    AllCounts.ViewFormDatas[i].Pass = 0;
+                    AllCounts.ViewFormDatas[i].Fail = 0;
+                    AllCounts.ViewFormDatas[i].Invalid = 0;
+                }
+                for (int i = 0; i < dataForm.Count; i++)
+                {
+                    dataForm[i].Pass = 0;
+                    dataForm[i].Fail = 0;
+                    dataForm[i].Invalid = 0;
+                }
+                dataForm.ResetBindings();
+            }
+        }
+
+        public void DataResetBindings()
+        {
+            if (gridView?.InvokeRequired == true)
+            {
+                gridView?.Invoke(new Action(DataResetBindings));
+            }
+            else
+            {
+                for (int k = 0; k < AllCounts.ViewFormDatas.Count; k++)
+                {
+                    dataForm[k] = AllCounts.ViewFormDatas[k];
+                }
+                dataForm.ResetBindings();
+            }
+        }
+    }
+
+    public class ViewFormData
+    {
+        public string Label { get; set; }
+        public int Pass { get; set; }
+        public int Fail { get; set; }
+        public int Invalid { get; set; }
+        [Browsable(false)]
+        public int CmpIndex { get; set; } = -1;
+        public int Total { get { return Pass + Fail + Invalid; } }
+        public ViewFormData(string label, int pass, int fail,int invalid)
+        {
+            Label = label;
+            Pass = pass;
+            Fail = fail;
+            Invalid = invalid;
+
+        }
+
+        public void InitialCount()
+        {
+            Pass = 0;
+            Fail = 0;
+            Invalid = 0;
+        }
+    }
+
+    public class AllStatisticCounts
+    {
+        public List<ViewFormData> ViewFormDatas { get; set; } = new List<ViewFormData>();
+        public Dictionary<int, string> AllComponentDict { get; set; } = new Dictionary<int, string>();
+        public Dictionary<int, string> FailComponentDict { get; set; } = new Dictionary<int, string>();
+    }
+}

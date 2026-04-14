@@ -1,0 +1,533 @@
+﻿using Hta.MotionBase;
+using HTA.Motion3.AdLink;
+using HTA.Motion3.Annotations;
+using HTA.Motion3.Virtual;
+using HTAMachine.Machine;
+using HTAMachine.Machine.Services;
+using HTAMachine.Module;
+using ModuleTemplate;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static HTAMachine.Machine.HtaMachineController;
+
+namespace TA2100Modules
+{
+    public partial class AxisControlModule : InterferenceModule, ICanGetHtaService, ICanLog
+    {
+        MachineStateArgs _MachineStateArgs = new MachineStateArgs();
+        #region 廣播觸發
+        /// <summary>
+        /// 宣告觸發事件(檢測區)
+        /// </summary>
+       
+        /// <summary>
+        /// 取得MotorOffset事件方法
+        /// </summary>
+        public void PreGetIMotorOffset()
+        {
+            _inspectMotorOffset = new MotorOffsetParam();
+            _flowMotorOffset = new FlowMotorOffset();
+
+
+            MotorOffsetParam args = new MotorOffsetParam();
+            //觸發事件，並寫入_IMotorOffset InspectionParamArgs
+            GetIMotorOffset?.Invoke(this, _inspectMotorOffset);
+            GetFMotorOffset?.Invoke(this, _flowMotorOffset);
+         
+        }
+
+
+        public AdLinkEtherCatAxis Y_EtherCATInstance => 視覺縱移軸 is AdLinkEtherCatAxis etherCatAxis ? etherCatAxis : null;
+        public AdLinkEtherCatAxis X_EtherCATInstance => BX1_流道橫移軸 is AdLinkEtherCatAxis etherCatAxis ? etherCatAxis : null;
+
+
+
+
+        #endregion
+        #region 一般變數
+        /// <summary>
+        /// 軸干涉用-定位資料(檢測區)
+        /// </summary>
+        public MotorOffsetParam _inspectMotorOffset;
+
+        /// <summary>
+        /// 軸干涉用-定位資料(流道區)
+        /// </summary>
+        private FlowMotorOffset _flowMotorOffset;
+        #endregion
+        #region Define Interference (軸干涉判斷)
+
+
+
+        public void BZ1軸干涉(object sender, FetchExamineAxisArgs args)
+        {
+            if (args.AxisMoveMode == AxisMoveModeEm.Move)
+            {
+                //Move
+                
+                if (X066000_傳送流道_入料銜接檢知_上下對照.CheckIO() || X066007_傳送流道_出料銜接檢知_側邊反射.CheckIO() || X066008_傳送流道_出料銜接檢知_上下對照.CheckIO())
+                {
+                    args.SetFetchExamine(true);
+                    args.FetchExamineString = "流道銜接檢知現在為異常的狀態，請確認並將其排除 ";
+                }
+                
+            }
+            else
+            {
+                //Home
+                if (X066000_傳送流道_入料銜接檢知_上下對照.CheckIO() || X066007_傳送流道_出料銜接檢知_側邊反射.CheckIO() || X066008_傳送流道_出料銜接檢知_上下對照.CheckIO())
+                {
+                    args.SetFetchExamine(true);
+                    args.FetchExamineString= "流道銜接檢知現在為異常的狀態，請確認並將其排除 ";
+                }
+            }
+        }
+        public void BX1軸干涉(object sender, FetchExamineAxisArgs args)
+        {
+
+            //2.BZ1不能在頂升位置
+
+            if (args.AxisMoveMode == AxisMoveModeEm.Move)
+            {
+                //Move
+                if (BZ1_流道頂升升降軸.ActualPos >= _inspectMotorOffset.Start_Z1)
+                {
+                    args.SetFetchExamine(true);
+                }
+
+
+
+            }
+            else if (args.AxisMoveMode == AxisMoveModeEm.Home)
+            {
+
+                if (BZ1_流道頂升升降軸.ActualPos >= _inspectMotorOffset.Start_Z1)
+                {
+                    args.SetFetchExamine(true);
+                }
+            }
+            else
+            {
+
+            }
+        }
+
+
+        public void BZ1流道頂升升降軸干涉(object sender, FetchExamineAxisArgs args)
+        {
+
+            if (X066000_傳送流道_入料銜接檢知_上下對照.CheckIO() || X066001_傳送流道_入料銜接檢知_側邊反射.CheckIO() ||
+                X066007_傳送流道_出料銜接檢知_側邊反射.CheckIO() || X066008_傳送流道_出料銜接檢知_上下對照.CheckIO())
+            {
+                args.SetFetchExamine(true);
+                args.FetchExamineString = "流道銜接檢知現在為異常的狀態，請確認並將其排除 ";
+                //MessageBox.Show("流道銜接檢知現在為異常的狀態，請確認並將其排除 ");
+            }
+
+        }
+
+
+        #endregion
+
+        #region Axis SYS Data
+
+        private int homeTimeout = 30000;
+        public event Action<string, string> AddTrace;
+        public event Action<string, string> AddDebug;
+        public event Action<string, string, Exception> AddFatal;
+        private IShowWorkLogService _showWorkLogService;
+        public bool IsMotorST = false;
+        private BoatCarrier _carrier;
+        [DefineBroadcast]
+        public event EventHandler<BoatCarrier> GetTrayLayout;
+
+        //bVirtual
+        [DefineBroadcast]
+        public event EventHandler<MachineStateArgs> NotifyAxisIsVirtual;
+        //public AdLinkEtherCatAxis AX1_EtherCATInstance => 視覺縱移軸 is AdLinkEtherCatAxis etherCatAxis ? etherCatAxis : null;
+        //public AdLinkEtherCatAxis AZ1_EtherCATInstance => BZ1_流道頂升升降軸 is AdLinkEtherCatAxis etherCatAxis ? etherCatAxis : null;
+        //public AdLinkEtherCatAxis BY1_EtherCATInstance => BX1_流道橫移軸 is AdLinkEtherCatAxis etherCatAxis ? etherCatAxis : null;
+
+        /// <summary>
+        /// 宣告觸發事件(流道區)
+        /// </summary>
+        [DefineBroadcast]
+        public event EventHandler<FlowMotorOffset> GetFMotorOffset;
+
+        #endregion
+
+        #region Showing CDI2.0
+
+
+
+
+        #endregion
+
+        #region Interface funtion
+        public override void MachineUiReady()
+        {
+            base.MachineUiReady();
+            _showWorkLogService = this.GetHtaService<IShowWorkLogService>();
+            _showWorkLogService.ShowWorkLog(this);
+        }
+
+
+        #endregion
+
+        #region Define Broadcast Receive
+
+        [DefineBroadcastReceive]
+        public void GetMotorST(object sender, MotorSTArgs args)
+        {
+            //執行前，如果有進過ST，就要ServoOff、ServoOn
+            視覺縱移軸.SetServoOn(false);
+            //AY2_視覺縱移軸_右.SetServoOn(false);
+            BX1_流道橫移軸.SetServoOn(false);
+            BZ1_流道頂升升降軸.SetServoOn(false);
+            BX2_流道傳送軸.Stop();
+
+
+            Thread.Sleep(50);
+
+            視覺縱移軸.SetServoOn(true);
+            //AY2_視覺縱移軸_右.SetServoOn(true);
+            BX1_流道橫移軸.SetServoOn(true);
+            BZ1_流道頂升升降軸.SetServoOn(true);
+           
+
+
+            Thread.Sleep(1000);//等待ServoOn完成
+        }
+
+        [DefineBroadcastReceive]
+        public void GetInital(object sender, InitalArgs args)
+        {
+            IsInitalAxis = args.IsInitialAxis;
+        }
+
+        #endregion
+
+        #region Funtion
+
+        public void LogTrace(string msg)
+        {
+            AddTrace?.Invoke("AxisControlModule", $@"{msg}");
+            string timeStr = DateTime.Now.ToString("HH:mm:ss") + " : ";
+            _showWorkLogService?.AddWorkLog(this, timeStr + msg);
+        }
+
+        public void AxisHomeErrorLog(IAxis axis)
+        {
+            LogTrace($"HomeFailed - Axis:{axis.Name}, ALM:{axis.CurrentStatus.ALM}, INP:{axis.CurrentStatus.INP}, SVON:{axis.CurrentStatus.SVON}, EMG:{axis.CurrentStatus.EMG}, NSTP:{axis.CurrentMoveStatus.NSTP}, CSTP:{axis.CurrentMoveStatus.CSTP}");
+            LogTrace($"MoveAxisFailed - ErrorCode:{axis.ErrorCode.ToString()}, Message{axis.ErrorString}");
+        }
+
+
+
+        public void PreGetTray()
+        {
+            _carrier = new BoatCarrier();
+            _carrier.IsPreUse = true;
+            _carrier.IsCalBig = false;
+            GetTrayLayout?.Invoke(this, _carrier);
+        }
+
+
+
+
+
+
+
+        /// <summary>
+        /// 絕對式馬達回原點清零動作
+        /// </summary>
+        [GroupDisplay("ForTest", "絕對式馬達歸零", "", 4)]
+        public void AxisABSReset()
+        {
+            //if (MessageBox.Show("確認後會把當前AX1/BY1位置設置為0，是否繼續? (絕對型馬達設置下)",
+            //        "Warning", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            //{
+            //    var ret = AxisGoHomeABS();
+            //    if (ret)
+            //    {
+            //        MessageBox.Show("絕對式馬達位置歸零成功");
+            //    }
+            //    else
+            //    {
+            //        MessageBox.Show("絕對式馬達位置歸零失敗，請檢查");
+            //    }
+            //}
+            //else
+            //{
+            //    return;
+            //}
+
+        }
+
+        /// <summary>
+        /// Axis set "0" pos (ABS)
+        /// </summary>
+        public override void MachineControllerReady()
+        {
+            base.MachineControllerReady();
+            _MachineStateArgs._AxisState = SetVirtualIO() ? AxisState.Virtual: AxisState.Real;
+            NotifyAxisIsVirtual?.Invoke(this, _MachineStateArgs);
+
+            if (true)
+            {
+                if (BZ1_流道頂升升降軸.GetEncoderType() == AxisEncoderTypeEm.絕對型)
+                {
+                    BZ1_流道頂升升降軸.SetAbosoluteZeroPos(0);
+
+                }
+                if (BX1_流道橫移軸.GetEncoderType() == AxisEncoderTypeEm.絕對型)
+                {
+                    BX1_流道橫移軸.SetAbosoluteZeroPos(0);
+
+                }
+            }
+           
+
+
+        }
+        public bool SetVirtualIO()
+        {
+            bool _bVirtual = false;
+            if (BZ1_流道頂升升降軸 is HTA.Motion3.Virtual.VirtualAxis || BX1_流道橫移軸 is HTA.Motion3.Virtual.VirtualAxis || 視覺縱移軸 is HTA.Motion3.Virtual.VirtualAxis )
+            {
+                _bVirtual = true;
+
+                X066000_傳送流道_入料銜接檢知_上下對照.SetIO(false);
+                X066007_傳送流道_出料銜接檢知_側邊反射.SetIO(false);
+                X066003_傳送流道_產品減速檢知.SetIO(false);
+                X066004_傳送流道_產品到位檢知.SetIO(false);
+                X066002_傳送流道_產品位置檢知.SetIO(false);
+
+            }
+            return _bVirtual;
+        }
+
+
+        /// <summary>
+        /// 絕對式馬達 原點歸零方法 (Test)
+        /// </summary>
+        /// <returns></returns>
+        //public bool AxisGoHomeABS()
+        //{
+        //    var rst1 = AX1_EtherCATInstance.ResetAbsoluteActualPos();
+        //    //var rst2 = AZ1_EtherCATInstance.ResetAbsoluteActualPos();
+        //    var rst3 = BY1_EtherCATInstance.ResetAbsoluteActualPos();
+
+        //    if (rst1 && rst3)//rst1 && rst2 && rst3
+        //    {
+        //        AX1_EtherCATInstance.ActualPos = 0;
+        //        //AZ1_EtherCATInstance.ActualPos = 0;
+        //        BY1_EtherCATInstance.ActualPos = 0;
+
+        //        return true;
+
+        //    }
+        //    else return false;
+
+        //}
+
+
+
+
+        #endregion
+
+
+        #region Axis Initinal
+
+        /// <summary>
+        /// Machine初始化時，會執行這段程式
+        /// </summary>
+        [ModuleInitialFunction(1, -1)]
+        public void InitialStep()
+        {
+           
+            LogTrace("InitialStep1 Start");
+            LogTrace("InitialStep Start");
+            PreGetIMotorOffset();
+            PreGetTray();
+            IOInitial();
+            LogTrace("InitialStep1 IOInitial End");
+
+            bool iniStateCheck = false;
+            bool cvIOState = X066003_傳送流道_產品減速檢知.CheckIO() || X066002_傳送流道_產品位置檢知.CheckIO()
+                || X066004_傳送流道_產品到位檢知.CheckIO();
+
+
+            if (cvIOState)
+            {
+                LogTrace("Initial--流道上有載盤");
+
+                var service = this.GetHtaService<IDialogService>();
+                var result = service.ShowDialog(this, new ShowDialogArgs()
+                {
+                    Button = MessageBoxButtons.YesNo,
+                    Message = "是否要同載盤初始化?",
+                });
+
+
+                if (result == DialogResult.Yes) { iniStateCheck = true; }
+                else { iniStateCheck = false; }
+
+
+            }
+
+
+            if (!cvIOState || iniStateCheck)
+            {
+             
+
+
+
+
+                視覺縱移軸.SetServoOn(false);
+                //AY2_視覺縱移軸_右.SetServoOn(false);
+                BX1_流道橫移軸.SetServoOn(false);
+                BZ1_流道頂升升降軸.SetServoOn(false);
+                BX2_流道傳送軸.Stop();
+
+
+                Thread.Sleep(200);
+
+                視覺縱移軸.SetServoOn(true);
+                //AY2_視覺縱移軸_右.SetServoOn(true);
+                BX1_流道橫移軸.SetServoOn(true);
+                BZ1_流道頂升升降軸.SetServoOn(true);
+                Thread.Sleep(200);
+
+                LogTrace("InitialStep HomeTask Start");
+                homeTimeout = 60000;
+                var homeTask = new List<Task<bool>>
+            {
+                //視覺縱移軸 (Go Home)
+                //AY2_視覺縱移軸_右
+                Task.Factory.StartNew(() =>
+                {
+                    LogTrace("InitialStep 視覺縱移軸 Home Start");
+                    var rlt = 視覺縱移軸.Home(homeTimeout);
+
+                    if(rlt == false)
+                        AxisHomeErrorLog(視覺縱移軸);
+
+                    LogTrace($@"Initial 視覺縱移軸 Home {rlt}");
+                    return rlt;
+                }),
+                //BZ1_流道頂升升降軸 (Go Home)
+                Task.Factory.StartNew(() =>
+                {
+                    LogTrace("InitialStep BZ1_流道頂升升降軸 Home Start");
+                    var rlt = BZ1_流道頂升升降軸.Home(homeTimeout);
+
+                    if(rlt == false)
+                        AxisHomeErrorLog(BZ1_流道頂升升降軸);
+
+                    LogTrace($@"InitialStep1 BZ1_流道頂升升降軸 Home {rlt}");
+                    return rlt;
+                }),
+                //BX1_流道橫移軸 (Go Home)
+                Task.Factory.StartNew(() =>
+                {
+                    LogTrace("InitialStep BX1_流道橫移軸 Home Start");
+                    var rlt = BX1_流道橫移軸.Home(homeTimeout);
+
+                    if(rlt == false)
+                        AxisHomeErrorLog(BX1_流道橫移軸);
+
+                    LogTrace($@"InitialStep1 BX1_流道橫移軸 Home {rlt}");
+                    return rlt;
+                }),
+
+            };
+
+
+                Task.WaitAll(homeTask.ToArray());
+                bool bHT = true;
+                foreach (var task in homeTask)
+                {
+                    if (!task.Result)
+                    {
+                        bHT = task.Result;
+                        AddTrace?.Invoke("UA_AxisControlModule", task.ToString() + task.Result.ToString());
+                        break;
+                    }
+                    //if (task.Status != TaskStatus.RanToCompletion || task.Result == false)
+                    //    throw new Exception($@"InitialStep1 Failed");
+                }
+
+                LogTrace("InitialStep1 End");
+            }
+            else
+            {
+                var service = this.GetHtaService<IDialogService>();
+
+                var result = service.ShowDialog(this, new ShowDialogArgs()
+                {
+                    Button = MessageBoxButtons.OK,
+                    Message = "請手動移出載盤再初始化",
+                });
+                if (result != DialogResult.OK)
+                {
+                    throw new Exception($@"InitialStep Failed");
+                }
+                    
+            }
+
+
+        }
+
+       
+        public void IOInitial()
+        {
+            
+            Y065003_正壓源電磁閥.SetIO(true);
+            Y067000_傳送流道_靠邊氣缸電磁閥.SetIO(false);
+            Y067001_傳送流道_到位氣缸電磁閥.SetIO(false);
+            Y067002_傳送流道_頂升真空電磁閥.SetIO(false);
+            Y067013_靜電消除器_放電啟動.SetIO(true);
+            SpinWait.SpinUntil(() => false, 1000);
+
+            if (X064010_正壓源檢知 is VirtualInputIO)
+            {
+                return;
+            }
+
+            if (!X064010_正壓源檢知.CheckIO())
+            {
+                throw new Exception("X064010_正壓源檢知 正壓源未產生，請確認");
+            }
+
+            if (X066005_傳送流道_到位氣缸_上升.CheckIO() || !X066006_傳送流道_到位氣缸_下降.CheckIO())
+            {
+                throw new Exception("到位氣缸現在為異常的狀態，請確認並將其下降");
+            }
+
+            //if (X066007_治具頂升氣缸_上升.CheckIO() || !X066008_治具頂升氣缸_下降.CheckIO())
+            //{
+            //    throw new Exception("治具頂升氣缸現在為異常的狀態，請確認並將其下降");
+            //}
+
+            if (X066000_傳送流道_入料銜接檢知_上下對照.CheckIO() || X066007_傳送流道_出料銜接檢知_側邊反射.CheckIO())
+            {
+                throw new Exception("流道銜接檢知現在為異常的狀態，請確認並將其排除");
+            }
+
+           
+
+        }
+
+       
+
+
+        #endregion
+
+    }
+}

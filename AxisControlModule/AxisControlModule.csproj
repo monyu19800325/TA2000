@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{95E64063-506A-4EDE-891C-83A159ED7DDD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>AxisControlModule</RootNamespace>
+    <AssemblyName>AxisControlModule</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'CDI2.0Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\Coordinator2.0\Dlls\ModuleDlls\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Appccelerate.StateMachine">
+      <HintPath>D:\HTASource\HTALibs\AppFsm\Appccelerate.StateMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AxisConfigModule">
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\AxisConfigModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ControlFlow, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\HTASource\HTALibs\HTA.ControlFlow\Debug\ControlFlow.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.FSM">
+      <HintPath>..\..\HTALibs\HTA.Machine\Debug\HTA.FSM.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTA.Motion3">
+      <HintPath>..\..\HTALibs\Hta.Motion3\Debug\HTA.Motion3.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.MotionBase">
+      <HintPath>..\..\HTALibs\Hta.MotionBase\Debug\Hta.MotionBase.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Hta.TrayModule, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\Hta.TrayModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="HTAMachine">
+      <HintPath>D:\HTASource\HTALibs\HTA.Machine\Debug\HTAMachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModuleCommon, Version=1.0.2026.122, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\HTALibs\HTA.Module\Debug\ModuleCommon.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AxisControlModule_IO.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AxisControlModule.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BoatModule\BoatModule.csproj">
+      <Project>{a5618aad-9580-4832-a07a-19aaa62c835f}</Project>
+      <Name>BoatModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\FlowCarrierModule\FlowCarrierModule.csproj">
+      <Project>{3d16c0a5-3647-4390-9dc9-0bb8e23cb04e}</Project>
+      <Name>FlowCarrierModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\InspectionModule\InspectionModule.csproj">
+      <Project>{a6b7aacc-b9b8-4bec-8ffc-86476be65dca}</Project>
+      <Name>InspectionModule</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TA2000Modules\TA2000Module.csproj">
+      <Project>{6a55eb6d-c696-4a96-a171-74e87de71c7a}</Project>
+      <Name>TA2000Module</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

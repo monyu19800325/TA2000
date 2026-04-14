@@ -1,0 +1,2584 @@
+﻿using DevExpress.Mvvm;
+using DevExpress.Mvvm.DataAnnotations;
+using DevExpress.Mvvm.POCO;
+using DevExpress.XtraPrinting.Native.WebClientUIControl;
+using HTA.InspectionFlow;
+using HTA.LightServer;
+using HTA.MainController;
+using HTA.TriggerServer;
+using HTA.Utility.Structure;
+using HTAMachine.Machine;
+using HyperInspection;
+using LVDATA;
+using Newtonsoft.Json.Linq;
+using ObjectDraw;
+using ResultPostProcess;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Threading;
+using TA2000Modules;
+using VisionComponent;
+using VisionController2.FlowForm.FlowComponentWizard;
+using VisionController2.FlowForm.FlowSettingForm2;
+using VisionController2.MosaicController;
+using static HTA.InspectionFlow.Component.SourceSelectViewModel;
+using static HyperInspection.FlowForm;
+using static VisionController2.FlowForm.FlowSettingForm2.FlowSettingForm2ViewModel;
+
+namespace TA2000Modules
+{
+    [POCOViewModel]
+    public partial class TeachControlWizardViewModel : IDisposable
+    {
+        #region 一般參數
+        IDispatcherService _dispatcher;
+        FlowIOData _flowData;
+        List<CandidateSource> SourceList = new List<CandidateSource>();
+        public IMainController CurrentVisionController;
+        public ContainerButtonForm ContainerForm;
+
+        public Action<Form, int> OnShowPanel;
+        public Action<string, string> OnLog;
+        private FocusTool focus;
+        public HTA.IFramer.IStationFramer Framer;
+        public HTA.TriggerServer.ITriggerChannel Trigger;
+        public double BaseDist;
+        public double OffsetDist;
+        public int MoveLimit;
+        public ImageWindowAccessor Accessor;
+        public HTA.LightServer.ILighter UseLighter;
+        public List<double> GroupInfo;
+        public string HintStr;
+        public InspectionProductParam ProductParam;
+        public InspectionModule Vision;
+        //public SuckerModule SuckerModule;
+        public Action OnClose;
+        public event EventHandler<IModule> SaveParam;
+        public event EventHandler<IModule> SaveVisionProductParam;
+        public BoatCarrier BoatCarrier;
+        public Action<int, int> ChangeCamAndCaptureIndexTrigger;
+        public Action OnRefreshBuffer;
+        public FlowForm FlowFormData;
+        public Action<double[]> SetLighting;
+        public int TotalCount = 1;
+        public MosaicViewModel2 Mosaic2Service;
+        public FlowSettingForm2ViewModel FlowSettingForm2ViewModel;
+        public bool IsFlowSettingDoneEvent = false;
+        double[] _lights;
+        private int _mCamIdx = 0;//目前此站別僅有一台相機 
+        private int _mDirIdx = 0;// 0 : forWard、1 : backWard 
+        private int _mCapIdx;//單一相機之光源張數Index
+        private int _currentCapIdx = 0;
+        public Func<int, int, List<double>> GetLightingPercentage;
+        public List<double> OffsetDists = new List<double>();
+        public bool IsAddImage = false;
+        private BlockingCollection<bool> _isAddImageQueue = new BlockingCollection<bool>();
+        public TreeView _coverTreeView;
+        bool _isDiffMap = false;
+
+        /// <summary>
+        /// 因產品檢測位置與校正片座標不同，組圖功能需要執行座標轉換
+        /// </summary>
+        double SuckerCenterToCalibrationCenter_X = 0; //39.5;
+        double SuckerCenterToCalibrationCenter_Y = 0; //123;
+        #endregion
+
+        #region binding參數
+        public List<int> MosaicList { get; set; } = new List<int>();
+        public List<int> XList { get; set; } = new List<int>();
+        public List<int> YList { get; set; } = new List<int>();
+        public List<string> VelList { get; set; } = new List<string>();
+        public List<string> TypeList { get; set; } = new List<string>() { "Mosaic", "Not Mosaic" };
+        public List<int> MapIndexImageList { get; set; } = new List<int>();
+        public List<int> GroupIndexList { get; set; } = new List<int>();
+        public List<int> CaptureIndexList { get; set; } = new List<int>();
+
+        public List<SingleUnitMap> TempSingleUnitMap { get; set; } = new List<SingleUnitMap>();
+        public List<int> CaptureCountList { get; set; } = new List<int>();
+
+        public int ColX { get; set; }
+        public int RowY { get; set; }
+        public string MoveVel { get; set; }
+
+        public string Type { get; set; }
+        public int MosaicPartIndex { get; set; }
+
+        int _mapIndexImage = 0;
+        public int MapIndexImage
+        {
+            get => _mapIndexImage;
+            set
+            {
+                _mapIndexImage = value;
+                GroupIndexList.Clear();
+                var groups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups;
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    if (TempSingleUnitMap[value].GroupIndexes.Any(x => x == groups[i].Id))
+                    {
+                        GroupIndexList.Add(i);
+                    }
+                }
+                GroupIndex = GroupIndexList.FirstOrDefault();
+                //更新Mosaic移動位置
+                MosaicList.Clear();
+                for (int i = 0; i < TempSingleUnitMap[value].MosaicPosition.Count; i++)
+                {
+                    MosaicList.Add(i);
+                }
+                MosaicPartIndex = 0;
+                this.RaisePropertiesChanged();
+            }
+        }
+
+        int _groupIndex = 0;
+        public int GroupIndex
+        {
+            get => _groupIndex;
+            set
+            {
+                _groupIndex = value;
+                CaptureIndexList.Clear();
+                RefreshCaptureIndex();
+                int currentTotal = 0;
+                for (int i = 0; i < value; i++)
+                {
+                    currentTotal += CaptureCountList[i];
+                }
+                if (CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count == 0)
+                {
+                    CaptureIndex = 0;
+                    return;
+                }
+                for (int i = 0; i < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[value].Captures.Count; i++)
+                {
+                    CaptureIndexList.Add(i+currentTotal);
+                }
+                CaptureIndex = CaptureIndexList.FirstOrDefault();
+                this.RaisePropertiesChanged();
+            }
+        }
+
+        public int UseMosaicCount { get; set; }
+        public int CaptureIndex { get; set; }
+
+        public virtual bool GetProductEnable { get; set; } = true;
+        public virtual bool PutProductEnable { get; set; } = true;
+        public virtual bool CaptureEnable { get; set; } = true;
+        public virtual bool FocusEnable { get; set; } = true;
+        public virtual bool LUE_X_Enable { get; set; } = true;
+        public virtual bool LUE_Y_Enable { get; set; } = true;
+        public virtual bool LUEMoasicEnable { get; set; } = true;
+        public virtual bool BtnMoveMosaicEnable { get; set; } = true;
+        #endregion
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="param"></param>
+        /// <param name="boatCarrier"></param>
+        /// <param name="baseDist"></param>
+        /// <param name="offsetDist"></param>
+       
+        /// <param name="moveLimit"></param>
+        /// <param name="accessor"></param>
+        /// <param name="useCam"></param>
+        /// <param name="useLighter"></param>
+        /// <param name="useTrigger"></param>
+        /// <param name="groupInfo"></param>
+        /// <param name="hintStr"></param>
+        public void Initial(InspectionProductParam param, BoatCarrier boatCarrier,
+            double baseDist,
+            double offsetDist,
+            
+            int moveLimit = 2,
+            ImageWindowAccessor accessor = null,
+            HTA.IFramer.IStationFramer useCam = null,
+            HTA.LightServer.ILighter useLighter = null,
+            HTA.TriggerServer.ITriggerChannel useTrigger = null,
+            List<double> groupInfo = null,
+            string hintStr = null)
+        {
+            _dispatcher = this.GetService<IDispatcherService>();
+            CurrentVisionController.LoadProduct(false);
+            ProductParam = param;
+            BoatCarrier = boatCarrier;
+            BaseDist = baseDist;
+            OffsetDist = offsetDist;
+            MoveLimit = moveLimit;
+            Accessor = accessor;
+            Framer = useCam;
+            UseLighter = useLighter;
+            Trigger = useTrigger;
+            GroupInfo = groupInfo;
+            HintStr = hintStr;
+           
+
+            VelList = Enum.GetNames(typeof(MoveVelEm)).ToList();
+
+            XList.Clear();
+            YList.Clear();
+            for (int i = 0; i < Vision.CurrentTrayCarrier.InspectData.InspectionPostion.XMaxStepCount; i++)
+            {
+                XList.Add(i + 1);
+            }
+
+            for (int i = 0; i < Vision.CurrentTrayCarrier.InspectData.InspectionPostion.YMaxStepCount; i++)
+            {
+                YList.Add(i + 1);
+            }
+
+            FlowFormData.FlowSettingDoneEvent += OnFlowSettingDoEvent;
+            CurrentVisionController.ProductSetting.MosaicSettings.UsingMosaicMethod = HTA.Utility.Calibration.MosaicMethodEm.SimpleMosaic;
+            FlowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+            FlowSettingForm2ViewModel.Setting.StopTrigger();
+
+            if (CurrentVisionController.ProductSetting.RoundSettings2.Count == 0)
+            {
+                FlowSettingForm2ViewModel.AddRound();
+            }
+            FlowSettingForm2ViewModel.UpdateFlowSetupImage();
+
+            TempSingleUnitMap.Clear();
+            for (int i = 0; i < Vision.ProductParam.BigProductMapSetting.MapList.Count; i++)
+            {
+                var temp = Vision.ProductParam.BigProductMapSetting.MapList[i].DeepClone();
+                TempSingleUnitMap.Add(temp);
+            }
+
+            Components = ((Flow2)FlowFormData._flowHandle).GetBasicComponents();
+            InitTempDefinedName();
+
+            if(Vision.CurrentTrayCarrier.InspectData.InspectionPostion.GetProductType() == ProductTypeEm.BigProduct)
+            {
+                BigProductCalc();
+            }
+            else
+            {
+                TempSingleUnitMap.Clear();
+                TempSingleUnitMap.Add(new SingleUnitMap() { MapIndex = 0, UseType ="Not Mosaic",MosaicPosition = new List<Point2d>() { new Point2d(50,50)},MosaicXYCount = new Point2d(1,1) });
+            }
+
+            CompareMapGroupList();
+
+            FlowSettingForm2ViewModel.UpdateFlowSetupImage();//更新flow的image(通常有修改capture、group的名字或是新增刪除，需要用到)
+            UpdateGroupCapture();
+            ReNameGroupAndCapture();
+
+            var folderList = FlowFormData._flowSetupHandle.GetFolderInfo();
+            List<int> folderInt = new List<int>();
+            for (int i = 0; i < folderList.Count; i++)
+            {
+                folderInt.Add(folderList[i].Count);
+            }
+            ReNameFolder(folderInt);
+            ReNameCustomerName();
+            FlowFormData.ExternalUpdateComponent();//更新有關元件相關的東西(通常在修改flowtree以及元件名稱時，需要用到)
+
+            FlowFormData._resultBuffer.UpdateStdInput();//如果元件有更新Source的時候，需要用到
+
+            //CompareMapGroupList();
+            CheckInitMapAndGroup();
+
+            MapIndexImage = MapIndexImageList.FirstOrDefault();
+            ColX = XList.FirstOrDefault();
+            RowY = YList.FirstOrDefault();
+            MoveVel = VelList.FirstOrDefault();
+
+
+            GetProductEnable = true;
+            PutProductEnable = false;
+            FocusEnable = false;
+            CaptureEnable = false;
+            LUEMoasicEnable = false;
+            BtnMoveMosaicEnable = false;
+            LUE_X_Enable = true;
+            LUE_Y_Enable = true;
+            if (_isDiffMap)
+            {
+                MessageBox.Show("Map數量跟之前不一樣，請再重新教讀元件後再儲存，請教讀完後再執行流程");
+            }
+        }
+
+        public void BigProductCalc()
+        {
+            double pixeltomm = 0.009;//((MainController)CurrentVisionController).GetHardware().CalibrationLists[0].Pix2MMAvr  TODO 上機需要改成實際的
+            var mosaicForm = new MosaicForm(CurrentVisionController);
+            List<Point2d[][]> point2Ds = new List<Point2d[][]>();
+            List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                var centerX = (TempSingleUnitMap[i].PositionRightUp.x + TempSingleUnitMap[i].PositionLeftDown.x)/2;
+                var centerY = (TempSingleUnitMap[i].PositionRightUp.y + TempSingleUnitMap[i].PositionLeftDown.y)/2;
+                var sizeX = Math.Abs(TempSingleUnitMap[i].PositionRightUp.x - TempSingleUnitMap[i].PositionLeftDown.x) + 2*TempSingleUnitMap[i].ExtendedWidth*pixeltomm;
+                var sizeY = Math.Abs(TempSingleUnitMap[i].PositionRightUp.y - TempSingleUnitMap[i].PositionLeftDown.y) + 2*TempSingleUnitMap[i].ExtendedHeight*pixeltomm;
+                mosaicForm.SetProductPosition(Vision.ProductName, new HTA.Utility.Structure.Point2d(sizeX, sizeY),
+                        new Point2d[] { new Point2d(centerX, centerY) }, false, false, new Point2d(1, 1), out var productCapturePoints);
+                point2Ds.Add(productCapturePoints);
+                TempSingleUnitMap[i].MosaicPosition.Clear();
+                TempSingleUnitMap[i].MosaicPosition.AddRange(productCapturePoints[0]);
+                for (int j = 0; j < TempSingleUnitMap[i].MosaicPosition.Count; j++)
+                {
+                    if(TempSingleUnitMap[i].Offsets.Count <= j)
+                    {
+                        TempSingleUnitMap[i].Offsets.Add(new Point2d(0, 0));
+                    }
+                }
+                if(TempSingleUnitMap[i].UseType == "Mosaic")
+                {
+                    mosaicMaps.Add(TempSingleUnitMap[i]);
+                }
+            }
+
+            if(Type == "Mosaic")
+            {
+                BigProductInitMosaic(mosaicMaps);
+            }
+
+            MosaicList.Clear();
+            for (int i = 0; i < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+            {
+                MosaicList.Add(i);
+            }
+            MosaicPartIndex = MosaicList.FirstOrDefault();
+            mosaicForm?.Dispose();
+
+        }
+
+        /// <summary>
+        /// 計算組圖的Map
+        /// </summary>
+        /// <param name="mosaicMaps"></param>
+        public void BigProductInitMosaic(List<SingleUnitMap> mosaicMaps)
+        {
+            int gridX = BoatCarrier.InspectData.InspectionPostion.MosaicXCount;
+            int gridY = BoatCarrier.InspectData.InspectionPostion.MosaicYCount;
+            Mosaic2Service = FlowSettingForm2ViewModel.MosaicViewModel;
+
+            CreateMap(mosaicMaps, -1);
+        }
+
+        /// <summary>
+        /// 建立Map，-1不單獨設定
+        /// </summary>
+        /// <param name="mosaicMaps"></param>
+        /// <param name="lastGroup"></param>
+        public void CreateMap(List<SingleUnitMap> mosaicMaps,int lastGroup)
+        {
+            //現在統一只設定一顆產品的位置
+            Mosaic2Service.FovCount = mosaicMaps.Count;//BoatCarrier.InspectData.InspectionPostion.YMaxStepCount*BoatCarrier.InspectData.InspectionPostion.XMaxStepCount*mosaicMaps.Count;
+            var inspect = BoatCarrier.InspectData.InspectionPostion;
+            for (int yIndex = 0; yIndex < 1; yIndex++)//BoatCarrier.InspectData.InspectionPostion.YMaxStepCount
+            {
+                Mosaic2Service.CurrentYIndex = yIndex;
+                for (int xIndex = 0; xIndex < 1; xIndex++)//BoatCarrier.InspectData.InspectionPostion.XMaxStepCount
+                {
+                    Mosaic2Service.CurrentXIndex = xIndex;
+                    for (int g = 0; g < mosaicMaps.Count; g++)
+                    {
+                        if (mosaicMaps[g].MapIndex == lastGroup)
+                        {
+                            continue;
+                        }
+                        Mosaic2Service.MosaicEditing = true;
+                        Mosaic2Service.CurrentFovIndex = mosaicMaps[g].MapIndex;//(xIndex + BoatCarrier.InspectData.InspectionPostion.XMaxStepCount*yIndex)*mosaicMaps.Count + mosaicMaps[g].MapIndex
+
+                        Mosaic2Service.CurrentGroupIndex = mosaicMaps[g].MapIndex;
+                        GetMosaicXYCount(mosaicMaps[g].MosaicPosition, out var mosaicXYCount);
+                        mosaicMaps[g].MosaicXYCount.x = mosaicXYCount.x;
+                        mosaicMaps[g].MosaicXYCount.y = mosaicXYCount.y;
+                        Mosaic2Service.SetMosaicGrid((int)mosaicXYCount.x, (int)mosaicXYCount.y);
+
+                        for (int i = 0; i < (int)mosaicXYCount.x; i++)
+                        {
+                            for (int j = 0; j < (int)mosaicXYCount.y; j++)
+                            {
+                                Mosaic2Service.SetMosaicPos(i, j, mosaicMaps[g].MosaicPosition[i*((int)mosaicXYCount.y)+j].x, mosaicMaps[g].MosaicPosition[i*((int)mosaicXYCount.y)+j].y);
+                            }
+                        }
+                    }
+
+                    //單獨最後設定，這樣拍照的才不用再換
+                    var targetMap = mosaicMaps.FirstOrDefault(x => x.MapIndex == lastGroup);
+                    if(targetMap != null)
+                    {
+                        Mosaic2Service.MosaicEditing = true;
+                        Mosaic2Service.CurrentFovIndex = targetMap.MapIndex;//(xIndex + BoatCarrier.InspectData.InspectionPostion.XMaxStepCount*yIndex)*mosaicMaps.Count + targetMap.MapIndex
+
+                        Mosaic2Service.CurrentGroupIndex = targetMap.MapIndex;
+                        GetMosaicXYCount(targetMap.MosaicPosition, out var mosaicXYCount2);
+                        targetMap.MosaicXYCount.x = mosaicXYCount2.x;
+                        targetMap.MosaicXYCount.y = mosaicXYCount2.y;
+                        Mosaic2Service.SetMosaicGrid((int)mosaicXYCount2.x, (int)mosaicXYCount2.y);
+
+                        for (int i = 0; i < (int)mosaicXYCount2.x; i++)
+                        {
+                            for (int j = 0; j < (int)mosaicXYCount2.y; j++)
+                            {
+                                Mosaic2Service.SetMosaicPos(i, j, targetMap.MosaicPosition[i*((int)mosaicXYCount2.y)+j].x, targetMap.MosaicPosition[i*((int)mosaicXYCount2.y)+j].y);
+                            }
+                        }
+                    }
+                }
+            }
+            CurrentVisionController.ProductSetting.MosaicSettings.UsingMosaicMethod = HTA.Utility.Calibration.MosaicMethodEm.SimpleMosaic;
+            Mosaic2Service.CalcMosaicMap();
+        }
+
+         /// <summary>
+        /// 比較Map與Group，有差別就刪除
+        /// </summary>
+        public void CompareMapGroupList()
+        {
+            List<int> groupIndexes = new List<int>();
+
+            var groups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups;
+
+
+            for (int k = 0; k < TempSingleUnitMap.Count; k++)
+            {
+                groupIndexes.Clear();
+                for (int i = 0; i < groups.Count; i++)
+                {
+                    if (TempSingleUnitMap[k].GroupIndexes.Any(x => x == groups[i].Id))
+                    {
+                        groupIndexes.Add(i);
+                    }
+                }
+                if (TempSingleUnitMap[k].GroupIndexes.Count != groupIndexes.Count)
+                {
+                    TempSingleUnitMap[k].GroupIndexes.Clear();
+                }
+            }
+
+            //check 是不是每個map都有至少一個groupindex
+            List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+            List<SingleUnitMap> partMaps = new List<SingleUnitMap>();
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType == "Mosaic")
+                {
+                    mosaicMaps.Add(TempSingleUnitMap[i]);
+                }
+                else
+                {
+                    partMaps.Add(TempSingleUnitMap[i]);
+                }
+            }
+
+            if (Type == "Mosaic")
+            {
+                foreach (var item in mosaicMaps)
+                {
+                    if (item.GroupIndexes.Count > 0)
+                    {
+                        //原本有link group
+                        List<Guid> changed = new List<Guid>();
+                        foreach (var gIndex in item.GroupIndexes)
+                        {
+                            var t = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id == gIndex);
+                            if (t != null)
+                            {
+                                if (!t.Name.StartsWith($"MapIndex_{item.MapIndex}"))
+                                {
+                                    //代表中間的Map有被刪除，需要遞補上去
+                                    changed.Add(t.Id);
+                                }
+                            }
+                        }
+                        //刪除原本的連結
+                        foreach (var c in changed)
+                        {
+                            item.GroupIndexes.Remove(c);
+                        }
+                        //重新set新的group
+                        var resetGroup = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x => x.Name.StartsWith($"MapIndex_{item.MapIndex}")).ToList();
+                        foreach (var g in resetGroup)
+                        {
+                            if (item.GroupIndexes.Any(x => x == g.Id))
+                                continue;
+                            item.GroupIndexes.Add(g.Id);
+                        }
+                    }
+                    else
+                    {
+                        var targetGroups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x => x.Name.StartsWith($"MapIndex_{item.MapIndex}")).ToList();
+                        foreach (var g in targetGroups)
+                        {
+                            item.GroupIndexes.Add(g.Id);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                //這邊的判斷會比較複雜，因為會受到Mosaic Map的數量，而有所不同(預設Mosaic的Map都在前面，分區的會在後面)
+                var nameList = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Select(x => x.Name).ToList();
+                List<int> mapIndexes = new List<int>();
+                for (int i = 0; i < nameList.Count; i++)
+                {
+                    var matches = Regex.Matches(nameList[i], @"MapIndex_(\d+)");
+                    if (matches.Count == 0)
+                        continue;
+                    var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    if (!mapIndexes.Any(x => x == mapIndex))
+                    {
+                        mapIndexes.Add(mapIndex);
+                    }
+                }
+                int fromOldMapIndex = mapIndexes[0];
+                int partIndex = 0;
+                int index = 0;
+                foreach (var item in partMaps)
+                {
+                    bool noMatch = false;
+                    var targetOld = Vision.ProductParam.LastTempPartMap.FirstOrDefault(x => x.Id == item.Id);
+                    if(targetOld != null)
+                    {
+                        fromOldMapIndex = targetOld.MapIndex;
+                    }
+                    //會遇到的情況:1.前後一樣，2.前比後少(Position)，3.前比後多(Position)，4.前後不同MapIndex
+                    if (item.GroupIndexes.Count > 0)
+                    {
+                        List<Guid> changed = new List<Guid>();
+                        foreach (var gIndex in item.GroupIndexes)
+                        {
+                            var t = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id == gIndex);
+                            if (t == null)
+                            {
+                                noMatch = true;
+                                break;
+                            }
+                            else
+                            {
+                                if (!t.Name.StartsWith($"MapIndex_{fromOldMapIndex}"))
+                                {
+                                    noMatch = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (noMatch)
+                        {
+                            //如果沒有match，就依順序加
+                            item.GroupIndexes.Clear();
+                            var mapGroups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x => x.Name.StartsWith($"MapIndex_{fromOldMapIndex}")).ToList();
+                            int addCount = 0;
+                            bool isAdd = false;
+                            foreach (var mg in mapGroups)
+                            {
+                                if (partMaps.Any(x => x.GroupIndexes.Any(y => y == mg.Id)))
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    if (addCount >= targetOld.GroupIndexes.Count)
+                                        break;
+                                    item.GroupIndexes.Add(mg.Id);
+                                    addCount++;
+                                    isAdd = true;
+                                }
+                            }
+                            if(isAdd)
+                                break;
+                        }
+ 
+                        //check 跟 position數量一樣
+                        if (item.GroupIndexes.Count < item.MosaicPosition.Count || item.GroupIndexes.Count%item.MosaicPosition.Count != 0)
+                        {
+                            //比較少part，故意清除，讓她刪除，之後直接加一組預設的group part
+                            item.GroupIndexes.Clear();
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        //怕說有人不小心刪除後，重加一組一模一樣的，他想要還原原本的教讀檔
+                        if(index < Vision.ProductParam.LastTempPartMap.Count && index < partMaps.Count)
+                        {
+                            if (partMaps[index].MosaicPosition.Count == Vision.ProductParam.LastTempPartMap[index].MosaicPosition.Count)
+                            {
+                                for (int i = 0; i < Vision.ProductParam.LastTempPartMap[index].GroupIndexes.Count; i++)
+                                {
+                                    if (partMaps.Any(x => x.GroupIndexes.Any(y => y == Vision.ProductParam.LastTempPartMap[index].GroupIndexes[i])))
+                                    {
+                                        break;
+                                    }
+                                    partMaps[index].GroupIndexes.Add(Vision.ProductParam.LastTempPartMap[index].GroupIndexes[i]);
+                                }
+                            }
+                        }
+                    }
+                    index++;
+                }
+
+                //判斷沒有link的group，要把group與他用的元件刪除
+                var noLink = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x => partMaps.All(y => y.GroupIndexes.All(z => z != x.Id))).ToList();
+                if(noLink.Count > 0)
+                {
+                    _isDiffMap = true;
+                }
+                var flowFolderInfo = FlowFormData._flowSetupHandle.GetFolderInfo();
+                var captureData = FlowSettingForm2ViewModel.CaptureData;
+
+                for (int i = noLink.Count-1; i >= 0; i--)
+                {
+                    var matches = Regex.Matches(noLink[i].Name, @"_(\d+)");
+                    if (matches.Count == 0)
+                        continue;
+                    var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    var groupIndex = int.Parse(matches[1].Groups[1].Value);
+                    var folder = flowFolderInfo.Folders.FirstOrDefault(x => x.FolderName.StartsWith($"MapIndex_{mapIndex};Group_{groupIndex}"));
+                    if (folder != null)
+                    {
+                        for (int j = folder.Contain.Second-1; j >= folder.Contain.First; j--)
+                        {
+                            var s = FlowFormData._flowSetupHandle.DelCmp(j);
+                            DoDefinedNameFunc(j, "Delete");
+                        }
+                        var folderIndex = flowFolderInfo.Folders.IndexOf(folder);
+                        FlowFormData._flowSetupHandle.DeleteFolder(folderIndex);
+                    }
+                    var target = captureData.FirstOrDefault(x => x.Id == noLink[i].Id);
+                    FlowSettingForm2ViewModel.DeleteGroups(target);
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// 確定初始化時，Map數量與現在的元件編排數量是符合的
+        /// </summary>
+        public void CheckInitMapAndGroup()
+        {
+            List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+            List<SingleUnitMap> partMaps = new List<SingleUnitMap>();
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType == "Mosaic")
+                {
+                    mosaicMaps.Add(TempSingleUnitMap[i]);
+                }
+                else
+                {
+                    partMaps.Add(TempSingleUnitMap[i]);
+                }
+            }
+
+            var nameList = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Select(x => x.Name).ToList();
+            List<int> mapCount = new List<int>();
+            foreach (var item in nameList)
+            {
+                var matches = Regex.Matches(item, @"MapIndex_(\d+)");
+                if (matches.Count == 0)
+                    continue;
+                var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                if (!mapCount.Any(x => x == mapIndex))
+                {
+                    mapCount.Add(mapIndex);
+                }
+            }
+
+            if (Type == "Mosaic")
+            {
+                //組圖
+                //1.判斷Map數量是否相同，比原本多=>新增；比原本少=>刪除
+
+                if (mosaicMaps.Count < mapCount.Count)
+                {
+                    //1.比原本少=>刪除 ok
+                    //以目前的結果，會剩下元件、Group與Capture有剩餘的沒刪
+                    FlowFormData.IsNoShowMessage = true;
+                    var flowTree = FlowFormData.GetFlowTreeView();
+                    var flowNodes = GetAllNodes(flowTree).ToList();
+                    var targets = flowNodes.Where(x =>
+                    {
+                        var matches = Regex.Matches(x.Text, @"M(\d+)");
+                        if (matches.Count == 0)
+                            return false;
+                        var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        if (!mosaicMaps.Any(y => y.MapIndex == mapIndex))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                    }).ToList();
+                    //刪元件
+                    if (targets.Count > 0)
+                        DeleteComponent(targets);
+                    //刪Group就好，因為會連Capture都刪
+                    var targetGroup = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x =>
+                    {
+                        var matches = Regex.Matches(x.Name, @"MapIndex_(\d+)");
+                        if (matches.Count == 0)
+                            return false;
+                        var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        if (!mosaicMaps.Any(y => y.MapIndex == mapIndex))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }).ToList();
+                    FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+                    var captureData = flowSettingForm2ViewModel.CaptureData;
+                    foreach (var delGroup in targetGroup)
+                    {
+                        var target = captureData.FirstOrDefault(x => x.Id == delGroup.Id);
+                        if (target == null)
+                            continue;
+                        flowSettingForm2ViewModel.DeleteGroups(target);
+                    }
+                    FlowFormData.IsNoShowMessage = false;
+                    flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                    _isDiffMap = true;
+                }
+                else
+                {
+                    if (mosaicMaps.Count > mapCount.Count)
+                    {
+                        //2.比原本多=>新增
+                        for (int i = mapCount.Count; i < mosaicMaps.Count; i++)
+                        {
+                            MapIndexImage = mosaicMaps[i].MapIndex;
+                            AddGroup(true);
+                        }
+                        _isDiffMap = true;
+                    }
+                }
+                
+            }
+            else
+            {
+                //分區
+                //1.判斷Map數量是否相同，比原本多=>新增；比原本少=>刪除
+                //2.判斷Part數量是否相同，比原本多=>新增；比原本少=>刪除
+                if (partMaps.Count < mapCount.Count)
+                {
+                    FlowFormData.IsNoShowMessage = true;
+                    var flowTree = FlowFormData.GetFlowTreeView();
+                    var flowNodes = GetAllNodes(flowTree).ToList();
+                    var targets = flowNodes.Where(x =>
+                    {
+                        var matches = Regex.Matches(x.Text, @"M(\d+)");
+                        if (matches.Count == 0)
+                            return false;
+                        var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        if (!partMaps.Any(y => y.MapIndex == mapIndex))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                    }).ToList();
+                    //刪元件
+                    if (targets.Count > 0)
+                        DeleteComponent(targets);
+                    //刪Group就好，因為會連Capture都刪
+                    var targetGroup = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Where(x =>
+                    {
+                        var matches = Regex.Matches(x.Name, @"MapIndex_(\d+)");
+                        if (matches.Count == 0)
+                            return false;
+                        var mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        if (!partMaps.Any(y => y.MapIndex == mapIndex))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }).ToList();
+                    FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+                    var captureData = flowSettingForm2ViewModel.CaptureData;
+                    foreach (var delGroup in targetGroup)
+                    {
+                        var target = captureData.FirstOrDefault(x => x.Id == delGroup.Id);
+                        if (target == null)
+                            continue;
+                        flowSettingForm2ViewModel.DeleteGroups(target);
+                    }
+                    FlowFormData.IsNoShowMessage = false;
+                    flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                    _isDiffMap = true;
+                }
+                else
+                {
+                    if (partMaps.Count > mapCount.Count)
+                    {
+                        //比原本多Map=>新增一組Map group part
+                        int addCount = 0;
+                        int index = 0;
+                        while(addCount < partMaps.Count - mapCount.Count)
+                        {
+                            if(index >= partMaps.Count)
+                            {
+                                break;
+                            }
+                            if (partMaps[index].GroupIndexes.Count == 0)
+                            {
+                                MapIndexImage = partMaps[index].MapIndex;
+                                AddGroup(true);
+                                addCount++;
+                            }
+                            index++;
+                        }
+                        _isDiffMap = true;
+                    }
+                }
+            }
+
+        }
+
+        public void GetMosaicXYCount(List<Point2d> mosaicPos ,out Point2d mosaicXYCount)
+        {
+            mosaicXYCount = new Point2d(0,0);
+            int xIndex = 1;
+            for (int i = 0; i < mosaicPos.Count-1; i++)
+            {
+                if (mosaicPos[i].x == mosaicPos[i+1].x)
+                {
+                    xIndex++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            int xCount = mosaicPos.Count / xIndex;
+
+            
+            int yCount = xIndex;
+            mosaicXYCount = new Point2d(xCount, yCount);
+        }
+
+        /// <summary>
+        /// 取得產品
+        /// </summary>
+        public void GetProduct()
+        {
+            //流道橫移軸(X)移動
+            var velBX1 = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+            var afterX = BoatCarrier.InspectData.InspectionPostion.SingleToGroupX(ColX - 1);
+            var distX = Vision.MotorOffset.TakeProduct_X + BoatCarrier.InspectData.InspectionPostion._blockStepX[afterX];
+            Vision.BX1_流道橫移軸.AbsoluteMove(distX, velBX1);
+
+            //縱移軸(Y)移動
+            var velAY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+            var afterY = BoatCarrier.InspectData.InspectionPostion.SingleToGroupY(RowY - 1);
+            var distY = Vision.MotorOffset.InspStandBy_Y + BoatCarrier.InspectData.InspectionPostion._blockStepY[afterY];
+            Vision.視覺縱移軸.AbsoluteMove(distY, velAY1);
+
+
+            var velAZ1_Down = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            bool retrySuccess = false;
+
+            GetProductEnable = false;
+            PutProductEnable = true;
+            FocusEnable = true;
+            CaptureEnable = true;
+            LUEMoasicEnable = true;
+            BtnMoveMosaicEnable = true;
+
+            LUE_X_Enable = false;
+            LUE_Y_Enable = false;
+
+
+
+
+            //升降軸上升至起始位置
+            var velAZ1_Up = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            double distZ_UP = 0;
+            // bool moveSuccessAZ1_Up = MoveAxis(AZ1_吸嘴升降軸, SuckerModuleThis.MotorOffset.StandBy_AZ1, velDefAZ1_Up);
+            bool moveSuccessAZ1_Up = false;
+            if (Vision.MotorOffset.InspectLiftPos_Z + ProductParam.FocusLocation_Mon < Vision.MotorOffset.InspectLiftPos_Z) //檢測高度比較高
+            {
+                distZ_UP = Vision.MotorOffset.InspectLiftPos_Z + ProductParam.FocusLocation_Mon;
+                moveSuccessAZ1_Up = Vision.MoveAxis(Vision.BZ1_流道頂升升降軸, distZ_UP, velAZ1_Up);
+            }
+            else  //流道比較高
+                moveSuccessAZ1_Up = true;
+
+
+            //移動至檢測位置
+            var velCX1_Insp = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+            //var afterX_Insp = BoatCarrier.InspectData.InspectionPostion.SingleToGroupX(ColX - 1);    
+            var distX_Insp = Vision.MotorOffset.TakeProduct_X/*+ BoatCarrier.InspectData.InspectionPostion._blockStepX[afterX_Insp]*/;
+            Vision.BX1_流道橫移軸.AbsoluteMove(distX_Insp, velCX1_Insp);
+
+            var velAY1_Insp = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+            //var afterY_Insp = BoatCarrier.InspectData.InspectionPostion.SingleToGroupY(RowY - 1);
+            var distY_Insp = Vision.MotorOffset.InspStandBy_Y/*+ BoatCarrier.InspectData.InspectionPostion._blockStepY[afterY_Insp]*/;
+            Vision.視覺縱移軸.AbsoluteMove(distY_Insp, velAY1_Insp);
+
+
+            //吸嘴升降軸下降至檢測位置
+            var velAZ1_Down_Insp = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            var distZ_Down_Insp = Vision.MotorOffset.InspectLiftPos_Z + OffsetDist;
+            Vision.BZ1_流道頂升升降軸.AbsoluteMove(distZ_Down_Insp, velAZ1_Down);
+
+        }
+
+        /// <summary>
+        /// 放下產品
+        /// </summary>
+        public void PutProduct()
+        {
+            //吸嘴升降軸上升至起始位置
+            var velAZ1_Up = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            bool moveSuccessAZ1 = false;
+            if (Vision.MotorOffset.InspectLiftPos_Z + ProductParam.FocusLocation_Mon < Vision.MotorOffset.InspectLiftPos_Z) //檢測高度比較高
+                moveSuccessAZ1 = true;
+            else  //流道比較高
+                moveSuccessAZ1 = Vision.MoveAxis(Vision.BZ1_流道頂升升降軸, Vision.MotorOffset.InspectLiftPos_Z, velAZ1_Up);
+
+            //吸嘴縱移軸(Y)移動
+            var velAY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+            var afterY = BoatCarrier.InspectData.InspectionPostion.SingleToGroupY(RowY - 1);
+            var distY = Vision.MotorOffset.InspStandBy_Y + BoatCarrier.InspectData.InspectionPostion._blockStepY[afterY];
+            Vision.視覺縱移軸.AbsoluteMove(distY, velAY1);
+
+
+            //吸嘴升降軸下降至貨品位置
+            var velAZ1_Down = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            var distZ_Down = Vision.MotorOffset.InspectLiftPos_Z;
+            Vision.BZ1_流道頂升升降軸.AbsoluteMove(distZ_Down, velAZ1_Down);
+
+
+            bool retrySuccess = false;
+
+
+
+
+            GetProductEnable = true;
+            PutProductEnable = false;
+            FocusEnable = false;
+            CaptureEnable = false;
+            LUEMoasicEnable = false;
+            BtnMoveMosaicEnable = false;
+
+            LUE_X_Enable = true;
+            LUE_Y_Enable = true;
+
+
+
+
+            //吸嘴升降軸上升至起始位置
+            velAZ1_Up = TATool.SelectVelDef(Vision.BZ1_流道頂升升降軸, Vision.BZ1VelList, MoveVel);
+            var distZ_UP = Vision.MotorOffset.InspectLiftPos_Z;
+            Vision.BZ1_流道頂升升降軸.AbsoluteMove(distZ_UP, velAZ1_Up);
+        }
+
+        
+        public void Capture()
+        {
+            //TODO
+            var inspect = BoatCarrier.InspectData.InspectionPostion;
+
+            var velAY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+            var velCX1 = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+
+            if (Type == "Mosaic")
+            {
+
+                if (Mosaic2Service != null)
+                {
+                    Mosaic2Service.NotifyImageAdd -= AddImageQueue;
+                }
+
+                //FlowSettingForm2ViewModel?.Dispose();
+                FlowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+                FlowSettingForm2ViewModel.Setting.StopTrigger();
+
+                Mosaic2Service = FlowSettingForm2ViewModel.MosaicViewModel;
+                Mosaic2Service.NotifyImageAdd += AddImageQueue;
+
+
+                //Mosaic2Service.CurrentFovIndex = RowY - 1;  //此Round的第n顆
+                Mosaic2Service.MosaicEditing = true;
+
+                var framer = CurrentVisionController.Framer;
+                //var capture = Mosaic2Service.GetCapture(_mDirIdx);
+
+                List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+                for (int i = 0; i < TempSingleUnitMap.Count; i++)
+                {
+                    if (TempSingleUnitMap[i].UseType == "Mosaic")
+                    {
+                        mosaicMaps.Add(TempSingleUnitMap[i]);
+                    }
+                }
+
+                UseMosaicCount = mosaicMaps.Count;
+                for (int mapIndex = 0; mapIndex < mosaicMaps.Count; mapIndex++)
+                {
+                    MapIndexImage = mapIndex;
+                    CreateMap(mosaicMaps, mosaicMaps[mapIndex].MapIndex);
+
+                    var capture = CurrentVisionController.ProductSetting.RoundSettings2[_mDirIdx].Groups.Where(x => x.MultiGruopIndex == mosaicMaps[mapIndex].MapIndex).ToArray();
+                    Mosaic2Service.CurrentGroupIndex = mapIndex;
+                    Mosaic2Service.GridX = (int)mosaicMaps[mapIndex].MosaicXYCount.x;
+                    Mosaic2Service.GridY = (int)mosaicMaps[mapIndex].MosaicXYCount.y;
+                    var map = Mosaic2Service.FindMap(CurrentVisionController.ProductSetting.MosaicSettings.CameraMosaicData, 0, 0, 0, mapIndex);
+                    Mosaic2Service.MosaicOfCamera[0].ResetImageList(map[0], capture.Length);
+                    for (int i = 0; i < Mosaic2Service.GridY; i++)
+                    {
+                        for (int j = 0; j < Mosaic2Service.GridX; j++)
+                        {
+
+                            var afterX = inspect.SingleToGroupX(ColX - 1);
+
+
+                            var distX = mosaicMaps[mapIndex].MosaicPosition[i*Mosaic2Service.GridX+j].x;
+
+
+                            var afterY = inspect.SingleToGroupY(RowY - 1);
+
+                            var distY = mosaicMaps[mapIndex].MosaicPosition[i * Mosaic2Service.GridX + j].y;
+
+                            Vision.BX1_流道橫移軸.AbsoluteMove(distX, velCX1);
+                            Vision.視覺縱移軸.AbsoluteMove(distY, velAY1);
+
+                            Mosaic2Service.SetSelectPos(j, i);
+
+                            Mosaic2Service.Capture(mosaicMaps[mapIndex].MapIndex);
+
+                            var captureCount = Mosaic2Service.GetCapture(0, mapIndex);
+                            for (int takes = 0; takes < captureCount; takes++)
+                            {
+                                var takeA = _isAddImageQueue.Take();
+                            }
+                        }
+                    }
+                    Mosaic2Service.ShadeCorrectionMosaic(CurrentVisionController.GetHardware());
+                    Mosaic2Service.BuildMosaic(0, 0, 0, mosaicMaps[mapIndex].MapIndex, UseMosaicCount);
+                    var image = Mosaic2Service.GetMosaicImage(GroupIndexList[0],0);
+
+                    if (_dispatcher != null)
+                    {
+                        _dispatcher.BeginInvoke(() =>
+                        {
+                            if (image != null)
+                            {
+                                Accessor?.OnShowImage(image);
+                                Accessor?.OnUpdate();
+                            }
+                        });
+
+                    }
+                }
+
+
+                FlowSettingForm2ViewModel.Done();
+
+                //為了把校正資訊寫在影像上
+                FlowFormData.AttachCalibration();
+
+                OnRefreshBuffer?.Invoke();
+            }
+            else
+            {
+                List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+                for (int i = 0; i < TempSingleUnitMap.Count; i++)
+                {
+                    if (TempSingleUnitMap[i].UseType != "Mosaic")
+                    {
+                        mosaicMaps.Add(TempSingleUnitMap[i]);
+                    }
+                }
+
+                for (int s = 0; s < mosaicMaps.Count; s++)
+                {
+                    for (int k = 0; k < mosaicMaps[s].MosaicPosition.Count; k++)
+                    {
+                        var afterX = inspect.SingleToGroupX(ColX - 1);
+                        var distX = mosaicMaps[s].MosaicPosition[k].x;
+                        var afterY = inspect.SingleToGroupY(RowY - 1);
+
+                        var distY = mosaicMaps[s].MosaicPosition[k].y;
+
+                        Vision.BX1_流道橫移軸.AbsoluteMove(distX, velCX1, 0);
+                        Vision.視覺縱移軸.AbsoluteMove(distY, velAY1, 0);
+                        Vision.BX1_流道橫移軸.WaitMotionDone(30000);
+                        Vision.視覺縱移軸.WaitMotionDone(30000);
+
+                        for (int i = 0; i < mosaicMaps[s].GroupIndexes.Count; i++)
+                        {
+                            var groups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups;
+                            var target = groups.FirstOrDefault(x => x.Id == mosaicMaps[s].GroupIndexes[i]);
+                            var targetIndex = groups.IndexOf(target);
+                            //第幾個Group
+                            for (int j = 0; j < groups[targetIndex].Captures.Count; j++)
+                            {
+                                //的第幾張影像
+
+                                //設定光源
+                                _mCapIdx = targetIndex * groups[targetIndex].Captures.Count + j;
+                                UpdateSelectIndex(targetIndex, j);
+
+                                SpinWait.SpinUntil(() => false, 300);
+                                SendGrab();
+                                SpinWait.SpinUntil(() =>
+                                {
+                                    Application.DoEvents();//這樣才會即時更新畫面
+                                    return false;
+                                }, 500);
+                                OnRefreshBuffer?.Invoke();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 移動分區或組圖單獨位置
+        /// </summary>
+        public void MovePartPos()
+        {
+
+            if (Type == "Mosaic")
+            {
+                var inspect = BoatCarrier.InspectData.InspectionPostion;
+
+                var velAX1 = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+                var velBY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+
+                var afterX = inspect.SingleToGroupX(ColX - 1);
+                // var distX = Vision.MotorOffset.InspStandBy_CX1 + inspect._bigProductX[afterX][MosaicIndex % inspect.MosaicYCount] + SuckerCenterToCalibrationCenter_X;
+                double distX = 0;
+
+                var afterY = inspect.SingleToGroupY(RowY - 1);
+                //var distY = SuckerModule.MotorOffset.InspecttPosition_AY1 + inspect._bigProductY[afterY][MosaicIndex / inspect.MosaicYCount] + SuckerCenterToCalibrationCenter_Y;
+                double distY = 0;
+
+                int _mosaicXCount = inspect.MosaicXCount;
+                int _mosaicYCount = inspect.MosaicYCount;
+
+                if (_mosaicXCount == 1)
+                {
+                    distX = inspect._bigProductX[0][0];
+                    distY = inspect._bigProductY[afterY][MosaicPartIndex % _mosaicYCount];
+                }
+                else if (_mosaicYCount == 1)
+                {
+                    distX = inspect._bigProductX[0][MosaicPartIndex % _mosaicXCount];
+                    distY = inspect._bigProductY[afterY][0];
+                }
+                else
+                {
+                    distX = inspect._bigProductX[0][MosaicPartIndex % _mosaicYCount];
+                    distY = inspect._bigProductY[afterY][MosaicPartIndex / _mosaicYCount];
+                }
+
+
+
+                Vision.BX1_流道橫移軸.AbsoluteMove(distX, velAX1);
+                Vision.視覺縱移軸.AbsoluteMove(distY, velBY1);
+            }
+            else
+            {
+                var inspect = BoatCarrier.InspectData.InspectionPostion;
+
+                var velAX1 = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+                var velBY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+
+                var afterX = inspect.SingleToGroupX(ColX - 1);
+                double distX = 0;
+
+                var afterY = inspect.SingleToGroupY(RowY - 1);
+                double distY = 0;
+
+                int _mosaicXCount = inspect.MosaicXCount;
+                int _mosaicYCount = inspect.MosaicYCount;
+
+
+                if (_mosaicXCount == 1)
+                {
+                    distX = inspect._bigProductX[0][0];
+                    distY = inspect._bigProductY[afterY][MosaicPartIndex % _mosaicYCount];
+                }
+                else if (_mosaicYCount == 1)
+                {
+                    distX = inspect._bigProductX[0][MosaicPartIndex % _mosaicXCount];
+                    distY = inspect._bigProductY[afterY][0];
+                }
+                else
+                {
+                    distX = inspect._bigProductX[0][MosaicPartIndex % _mosaicYCount];
+                    distY = inspect._bigProductY[afterY][MosaicPartIndex / _mosaicYCount];
+                }
+
+
+
+                Vision.BX1_流道橫移軸.AbsoluteMove(distX, velAX1);
+                Vision.視覺縱移軸.AbsoluteMove(distY, velBY1);
+            }
+        }
+
+        //public void AdjustPartPos()
+        //{
+        //    //開一個設定offset的介面
+        //    List<AdjustPartPos> adjustPartPoses = new List<AdjustPartPos>();
+
+        //    for (int i = 0; i < TempSingleUnitMap[MapIndexMove].Offsets.Count; i++)
+        //    {
+        //        adjustPartPoses.Add(new AdjustPartPos() { Index = i, OffsetX = TempSingleUnitMap[MapIndexMove].Offsets[i].x, OffsetY = TempSingleUnitMap[MapIndexMove].Offsets[i].y });
+        //    }
+
+        //    AdjustPartPosForm adjustPartPosForm = new AdjustPartPosForm(adjustPartPoses);
+        //    var result = adjustPartPosForm.ShowDialog();
+        //    if (result == DialogResult.OK)
+        //    {
+        //        for (int i = 0; i < adjustPartPoses.Count; i++)
+        //        {
+        //            TempSingleUnitMap[MapIndexMove].Offsets[i].x = adjustPartPoses[i].OffsetX;
+        //            TempSingleUnitMap[MapIndexMove].Offsets[i].y = adjustPartPoses[i].OffsetY;
+        //        }
+        //    }
+        //}
+
+        /// <summary>
+        /// 加入Group
+        /// </summary>
+        public void AddGroup(bool isDefault = false)
+        {
+            FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+
+            if (CurrentVisionController.ProductSetting.RoundSettings2.Count == 0)
+            {
+                flowSettingForm2ViewModel.AddRound();
+            }
+
+            int targetIndex = -1;
+            int targetMapIndex = 0;
+            if (TempSingleUnitMap[MapIndexImage].GroupIndexes.Count > 0)
+            {
+                var target = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id ==
+                    TempSingleUnitMap[MapIndexImage].GroupIndexes[TempSingleUnitMap[MapIndexImage].GroupIndexes.Count-1]);
+                targetIndex = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.IndexOf(target);
+                targetMapIndex = MapIndexImage;
+            }
+            else
+            {
+                if (MapIndexImage == 0)
+                {
+                    targetIndex = -1;
+                    targetMapIndex = MapIndexImage;
+                }
+                else
+                {
+                    if(TempSingleUnitMap[MapIndexImage-1].UseType != TempSingleUnitMap[MapIndexImage].UseType)
+                    {
+                        //是這個站別的第一組
+                        targetIndex = -1;
+                        targetMapIndex = MapIndexImage;
+                    }
+                    else
+                    {
+                        if (TempSingleUnitMap[MapIndexImage-1].GroupIndexes.Count == 0)
+                        {
+                            //代表這個map還沒加group
+                            targetIndex = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count-1;
+                            targetMapIndex = MapIndexImage;
+                        }
+                        else
+                        {
+                            var target = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id ==
+                                TempSingleUnitMap[MapIndexImage-1].GroupIndexes[TempSingleUnitMap[MapIndexImage-1].GroupIndexes.Count-1]);
+                            targetIndex = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.IndexOf(target);
+                            targetMapIndex = MapIndexImage-1;
+                            if (targetIndex == -1)
+                            {
+                                //代表已經是第0個了，沒有更上面了
+                                targetMapIndex = MapIndexImage;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (Type != "Mosaic")
+            {
+                for (int i = 0; i < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+                {
+                    var group = flowSettingForm2ViewModel.AddGroup(0, targetIndex+i, $"Group_{targetIndex+1 + i}");
+                    flowSettingForm2ViewModel.AddCapture(group.Id);
+                    TempSingleUnitMap[MapIndexImage].GroupIndexes.Add(group.Id);
+                }
+                flowSettingForm2ViewModel.UpdateFlowSetupImage();//必須最後更新，不能放在迴圈裡，不然source會有問題，一下對一下錯
+            }
+            else
+            {
+                var group = flowSettingForm2ViewModel.AddGroup(0, targetIndex, $"Group_{targetIndex+1}");
+                flowSettingForm2ViewModel.AddCapture(group.Id);
+                flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                TempSingleUnitMap[MapIndexImage].GroupIndexes.Add(group.Id);
+                var newGroup = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id == group.Id);
+                newGroup.MultiGruopIndex = MapIndexImage;
+            }
+
+
+            ComponentBuildWizard componentBuildWizard = new ComponentBuildWizard(FlowFormData._flowSetupHandle, FlowFormData._resultBuffer, LightTypeEm._2d);
+            if (isDefault)
+            {
+                if (Type != "Mosaic")
+                {
+                    componentBuildWizard.RepeatCount = TempSingleUnitMap[MapIndexImage].MosaicPosition.Count;
+                    componentBuildWizard.IsReapeatFolder = true;
+                    List<string> repeatFolderNames = new List<string>();
+                    for (int i = 0; i <  TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+                    {
+                        repeatFolderNames.Add($"MapIndex_{MapIndexImage};Group_{targetIndex+1+i};Part_{i}");
+                    }
+                    componentBuildWizard.SetRepeatFolderNames(repeatFolderNames);
+                }
+                componentBuildWizard.DefaultAddComponent();
+            }
+            else
+            {
+                componentBuildWizard.SetFolderCustomerName($"MapIndex_{MapIndexImage};Group_{targetIndex+1}");
+                if (Type != "Mosaic")
+                {
+                    componentBuildWizard.RepeatCount = TempSingleUnitMap[MapIndexImage].MosaicPosition.Count;
+                    componentBuildWizard.IsReapeatFolder = true;
+                    List<string> repeatFolderNames = new List<string>();
+                    for (int i = 0; i <  TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+                    {
+                        repeatFolderNames.Add($"MapIndex_{MapIndexImage};Group_{targetIndex+1+i};Part_{i}");
+                    }
+                    componentBuildWizard.SetRepeatFolderNames(repeatFolderNames);
+                }
+                componentBuildWizard.ShowDialog();
+            }
+
+            var folderList = FlowFormData._flowSetupHandle.GetFolderInfo();
+            List<int> folderInt = new List<int>();
+            for (int i = 0; i < folderList.Count; i++)
+            {
+                folderInt.Add(folderList[i].Count);
+            }
+
+            if (Type != "Mosaic")
+            {
+                for (int k = 0; k < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; k++)
+                {
+
+                    UpdateCmpSource(folderList, targetIndex+(TempSingleUnitMap[MapIndexImage].MosaicPosition.Count-k-1), TempSingleUnitMap[MapIndexImage].MosaicPosition.Count-k-1);
+
+                    var folderTarget = folderList.Folders.FirstOrDefault(x =>
+                    {
+                        var matches = Regex.Matches(x.FolderName, @"_(\d+)");
+                        int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        int groupIndex = int.Parse(matches[1].Groups[1].Value);
+                        if (mapIndex == targetMapIndex && groupIndex == targetIndex)
+                        {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (folderTarget == null)
+                    {
+                        //通常是沒有第一個
+                        var a = folderInt[folderInt.Count-1];
+                        folderInt.RemoveAt(folderInt.Count-1);
+                        folderInt.Insert(k, a);
+                        for (int i = 0; i < folderList[folderList.Count-1].Contain.Second-folderList[folderList.Count-1].Contain.First; i++)
+                        {
+                            DoDefinedNameFunc(folderList[k].Contain.First+i, "Insert");
+                        }
+                        for (int i = 0; i < folderList[folderList.Count-1].Contain.First; i++)
+                        {
+                            for (int j = folderList[folderList.Count-1].Contain.First; j < folderList[folderList.Count-1].Contain.Second; j++)
+                            {
+                                FlowFormData._flowSetupHandle.Swap(j-i, j-1-i);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var index = folderList.Folders.IndexOf(folderTarget);
+                        var a = folderInt[folderInt.Count-1];
+                        folderInt.RemoveAt(folderInt.Count-1);
+                        folderInt.Insert(index+1+k, a);
+                        for (int i = 0; i < folderList[folderList.Count-1].Contain.Second-folderList[folderList.Count-1].Contain.First; i++)
+                        {
+                            DoDefinedNameFunc(folderList[index+1+k].Contain.First+i, "Insert");
+                        }
+
+
+                        for (int i = 0; i < folderList[folderList.Count-1].Contain.First-folderTarget.Contain.Second; i++)
+                        {
+                            for (int j = folderList[folderList.Count-1].Contain.First; j < folderList[folderList.Count-1].Contain.Second; j++)
+                            {
+                                FlowFormData._flowSetupHandle.Swap(j-i, j-1-i);
+                            }
+                        }
+                    }
+                    
+                }
+            }
+            else
+            {
+                var folderTarget = folderList.Folders.FirstOrDefault(x =>
+                {
+                    var matches = Regex.Matches(x.FolderName, @"_(\d+)");
+                    int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    int groupIndex = int.Parse(matches[1].Groups[1].Value);
+                    if (mapIndex == targetMapIndex && groupIndex == targetIndex)
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+
+                UpdateCmpSource(folderList, targetIndex);
+
+                var index = folderList.Folders.IndexOf(folderTarget);
+                var a = folderInt[folderInt.Count-1];
+                folderInt.RemoveAt(folderInt.Count-1);
+                folderInt.Insert(index+1, a);
+
+                for (int i = 0; i < folderList[folderList.Count-1].Contain.Second-folderList[folderList.Count-1].Contain.First; i++)
+                {
+                    DoDefinedNameFunc(folderList[index+1].Contain.First+i, "Insert");
+                }
+
+                for (int i = 0; i < folderList[folderList.Count-1].Contain.First-folderTarget.Contain.Second; i++)
+                {
+                    for (int j = folderList[folderList.Count-1].Contain.First; j < folderList[folderList.Count-1].Contain.Second; j++)
+                    {
+                        FlowFormData._flowSetupHandle.Swap(j-i, j-1-i);
+                    }
+                }
+            }
+
+
+
+
+            ReNameFolder(folderInt);
+
+            ReNameCustomerName();
+            FlowFormData.ExternalUpdateComponent();
+            UpdateGroupCapture();
+            ReNameGroupAndCapture();
+            GroupIndex = GroupIndexList.LastOrDefault();
+            //UpdateFlowTreeView2();
+            UpdateMapTree();
+            this.RaisePropertyChanged(x => x.GroupIndex);
+        }
+        /// <summary>
+        /// 刪除Group
+        /// </summary>
+        public void DeleteGroup()
+        {
+            
+
+            if (Type == "Mosaic")
+            {
+                if (TempSingleUnitMap[MapIndexImage].GroupIndexes.Count <= 1)
+                {
+                    MessageBox.Show("當下MapIndex只剩一個Group，不可再刪除");
+                    return;
+                }
+                MessageBox.Show("確定要刪除嗎?");
+            }
+            else
+            {
+                if (TempSingleUnitMap[MapIndexImage].GroupIndexes.Count <= TempSingleUnitMap[MapIndexImage].MosaicPosition.Count)
+                {
+                    MessageBox.Show($"當下MapIndex只剩1個Inspect，不可再刪除");
+                    return;
+                }
+                var part = GroupIndex/TempSingleUnitMap[MapIndexImage].MosaicPosition.Count;
+                List<int> partGroupNumber = new List<int>();
+                for (int i = 0; i < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+                {
+                    partGroupNumber.Add(part*TempSingleUnitMap[MapIndexImage].MosaicPosition.Count+i);
+                }
+
+                string partListStr = "";
+                for (int i = 0; i < partGroupNumber.Count; i++)
+                {
+                    partListStr += $"Position_{partGroupNumber[i]}、";
+                }
+                MessageBox.Show($"會一起刪除{partListStr}，確定要刪除嗎?");
+            }
+
+
+            FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+            var captureData = flowSettingForm2ViewModel.CaptureData;
+            var target = captureData.FirstOrDefault(x => x.Id == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Id);
+            if (target != null)
+            {
+                List<int> folderInt = new List<int>();
+                FolderList folderList;
+                if (TempSingleUnitMap[MapIndexImage].UseType != "Mosaic")
+                {
+                    var part = GroupIndex/TempSingleUnitMap[MapIndexImage].MosaicPosition.Count;
+                    List<int> partNumber = new List<int>();
+                    for (int i = 0; i < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; i++)
+                    {
+                        partNumber.Add(part*TempSingleUnitMap[MapIndexImage].MosaicPosition.Count+i);
+                    }
+                    for (int i = 0; i < partNumber.Count; i++)
+                    {
+                        var partTarget = captureData.FirstOrDefault(x => x.Id == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[partNumber[i]].Id);
+                        try
+                        {
+                            flowSettingForm2ViewModel.DeleteGroups(partTarget);
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                        TempSingleUnitMap[MapIndexImage].GroupIndexes.Remove(partTarget.Id);
+
+                        folderList = FlowFormData._flowSetupHandle.GetFolderInfo();
+
+                        var targetFolder = folderList.Folders.FirstOrDefault(x =>
+                        {
+                            var matches = Regex.Matches(x.FolderName, @"_(\d+)");
+
+                            int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                            int group = int.Parse(matches[1].Groups[1].Value);
+                            if (MapIndexImage == mapIndex && partNumber[i] == group)
+                            {
+                                return true;
+                            }
+                            return false;
+                        });
+                        var folderIndex = folderList.Folders.IndexOf(targetFolder);
+
+                        //要先刪除裡面的元件，再刪除folder才不會錯誤
+                        for (int j = folderList[folderIndex].Contain.Second-1; j >= folderList[folderIndex].Contain.First; j--)
+                        {
+                            var s = FlowFormData._flowSetupHandle.DelCmp(j);
+                            DoDefinedNameFunc(j, "Delete");
+                        }
+                        FlowFormData._flowSetupHandle.DeleteFolder(folderIndex);
+
+                    }
+                }
+                else
+                {
+                    flowSettingForm2ViewModel.DeleteGroups(target);
+                    TempSingleUnitMap[MapIndexImage].GroupIndexes.Remove(target.Id);
+
+                    folderList = FlowFormData._flowSetupHandle.GetFolderInfo();
+
+                    var targetFolder = folderList.Folders.FirstOrDefault(x =>
+                    {
+                        var matches = Regex.Matches(x.FolderName, @"_(\d+)");
+
+                        int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                        int group = int.Parse(matches[1].Groups[1].Value);
+                        if (MapIndexImage == mapIndex && GroupIndex == group)
+                        {
+                            return true;
+                        }
+                        return false;
+                    });
+                    var folderIndex = folderList.Folders.IndexOf(targetFolder);
+
+                    //要先刪除裡面的元件，再刪除folder才不會錯誤
+                    for (int i = folderList[folderIndex].Contain.Second-1; i >= folderList[folderIndex].Contain.First; i--)
+                    {
+                        var s = FlowFormData._flowSetupHandle.DelCmp(i);
+                        DoDefinedNameFunc(i, "Delete");
+                    }
+                    FlowFormData._flowSetupHandle.DeleteFolder(folderIndex);
+
+                }
+
+                folderList = FlowFormData._flowSetupHandle.GetFolderInfo();
+                for (int i = 0; i < folderList.Count; i++)
+                {
+                    folderInt.Add(folderList[i].Count);
+                }
+
+                ReNameFolder(folderInt);
+                flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                if (TempSingleUnitMap[MapIndexImage].GroupIndexes.Count == 0)
+                {
+                    GroupIndex = 0;
+                }
+                else
+                {
+                    var target0 = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id == TempSingleUnitMap[MapIndexImage].GroupIndexes[0]);
+                    var index0 = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.IndexOf(target0);
+                    GroupIndex = index0;
+                }
+
+                UpdateGroupCapture();
+                ReNameCustomerName();
+                FlowFormData.ExternalUpdateComponent();
+                ReNameGroupAndCapture();
+                FlowFormData._resultBuffer.UpdateStdInput();
+                UpdateMapTree();
+            }
+        }
+
+        /// <summary>
+        /// 加入Capture
+        /// </summary>
+        public void AddCapture()
+        {
+            FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+
+            var captureData = flowSettingForm2ViewModel.CaptureData;
+            var target = captureData.FirstOrDefault(x => x.Id == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Id);
+            if (target != null)
+            {
+                flowSettingForm2ViewModel.AddCapture(target.Id);
+                flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                UpdateGroupCapture();
+                ReNameGroupAndCapture();
+                FlowFormData._resultBuffer.UpdateStdInput();
+            }
+            var success = AddComponent(true);
+            if (!success)
+            {
+                CaptureIndex = CaptureIndexList.Last();
+                DeleteCapture(false);
+            }
+        }
+        /// <summary>
+        /// 刪除Capture
+        /// </summary>
+        public void DeleteCapture(bool deleteCmp)
+        {
+            if (CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures.Count <= 1)
+            {
+                MessageBox.Show("當下Position只剩一個Capture，不可再刪除");
+                return;
+            }
+            FlowSettingForm2ViewModel flowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+            var captureData = flowSettingForm2ViewModel.CaptureData;
+            var captureIndex = CaptureIndexList.IndexOf(CaptureIndex);
+            var target = captureData.FirstOrDefault(x => x.Id == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures[captureIndex].Id);
+            if (target != null)
+            {
+                flowSettingForm2ViewModel.DeleteCapture(target);
+                flowSettingForm2ViewModel.UpdateFlowSetupImage();
+                CaptureIndex = CaptureIndexList.FirstOrDefault();
+                UpdateGroupCapture();
+                if (deleteCmp)
+                {
+                    List<TreeNode> delNodes = new List<TreeNode>();
+                    for (int i = 0; i < CurrentNode.Nodes.Count; i++)
+                    {
+                        delNodes.Add(CurrentNode.Nodes[i]);
+                    }
+                    DeleteComponent(delNodes);
+                }
+                FlowFormData._resultBuffer.UpdateStdInput();
+            }
+            ReNameCustomerName();
+            UpdateMapTree();
+        }
+        /// <summary>
+        /// 開啟調整光源介面
+        /// </summary>
+        public void AdjustLight()
+        {
+            if (ContainerForm != null)
+            {
+                return;
+            }
+
+            var captureIndex = CaptureIndexList.IndexOf(CaptureIndex);
+            _lights = new double[CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures[captureIndex].Light.LightingPersentage.Count];
+            double[] lights = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures[captureIndex].Light.LightingPersentage.ToArray();
+            var lightForm = new LightForm(CurrentVisionController.Lighter, lights);
+
+            lightForm.SetToDevice = true;
+            lightForm.OnLightValueChange += (obj, args) =>
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    _lights[i] = args[i];
+                }
+            };
+            lightForm.ApplyCurrentSetting();
+            if (ContainerForm == null)
+            {
+                ContainerForm = new ContainerButtonForm(lightForm, new string[] { "OK", "Cancel" });
+                ContainerForm.FormClosed +=(s, e) =>
+                {
+                    if (ContainerForm.ButtonResult == "OK")
+                    {
+                        for (int i = 0; i < _lights.Length; i++)
+                        {
+                            CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures[captureIndex].Light.LightingPersentage[i] = _lights[i];
+                        }
+                    }
+                    CurrentVisionController.Trigger1.SetTimmerTrigger(false, 1000);
+                    lightForm.Close();
+                    ContainerForm.Dispose();
+                    ContainerForm = null;
+                };
+                //OnShowPanel?.Invoke(ContainerForm,400);
+                ShowOnTeachPanel(ContainerForm);
+            }
+            CurrentVisionController.Trigger1.SetTimmerTrigger(true, 1000);
+        }
+        /// <summary>
+        /// 開啟自動對焦介面
+        /// </summary>
+        public void Focus()
+        {
+            OnLog?.Invoke("InspectionModule", "-Teach FocusLeft Start");
+            if (ContainerForm != null)
+            {
+                return;
+            }
+            if (focus != null)
+                return;
+
+            OffsetDist = ProductParam.FocusLocation_Mon;
+            OffsetDists = ProductParam.FocusLocations_Mon;
+
+            focus = new FocusTool(Vision.BZ1_流道頂升升降軸, BaseDist, OffsetDist,
+                 MoveLimit, 0, OnLog, Accessor, Framer, UseLighter, Trigger, GroupInfo, HintStr);
+
+            focus.FormClosing += (s, er) =>
+            {
+
+                ProductParam.FocusLocation = focus.fluent.ViewModel.NewOffsetData;
+                OffsetDist = ProductParam.FocusLocation;
+                if (focus.fluent.ViewModel.IsModifyOffsetData)
+                {
+                    ProductParam.FocusLocations_Mon = focus.fluent.ViewModel.NewOffsetDatas;
+                }
+
+                focus?.Dispose();
+                focus = null;
+                SaveVisionProductParam?.Invoke(this, Vision);
+
+                //要儲存Offset
+            };
+            if (ContainerForm == null)
+            {
+                ContainerForm = new ContainerButtonForm(focus);
+                ContainerForm.FormClosed += (s, e) =>
+                {
+                    focus.Close();
+                    ContainerForm.Dispose();
+                    ContainerForm = null;
+                };
+               //OnShowPanel?.Invoke(ContainerForm,1000);
+                ShowOnTeachPanel(ContainerForm);
+            }
+            //focus.Show();
+            OnLog?.Invoke("InspectionModule", "-Teach FocusLeft End");
+        }
+
+        /// <summary>
+        /// 此MapIndex取像
+        /// </summary>
+        public void TheMapIndexCapture()
+        {
+            var queueCount = _isAddImageQueue.Count;
+
+            for (int i = 0; i < queueCount; i++)
+            {
+                _isAddImageQueue.Take();
+            }
+
+            var inspect = BoatCarrier.InspectData.InspectionPostion;
+
+            var velAY1 = TATool.SelectVelDef(Vision.視覺縱移軸, Vision.AY1VelList, MoveVel);
+            var velCX1 = TATool.SelectVelDef(Vision.BX1_流道橫移軸, Vision.BX1VelList, MoveVel);
+            if (Type == "Mosaic")
+            {
+                if (Mosaic2Service != null)
+                {
+                    Mosaic2Service.NotifyImageAdd -= AddImageQueue;
+                }
+
+                FlowSettingForm2ViewModel = new FlowSettingForm2ViewModel(CurrentVisionController, FlowFormData._flowHandle, null, CurrentVisionController.Framer.HaveHardware);
+                FlowSettingForm2ViewModel.Setting.StopTrigger();
+
+                Mosaic2Service = FlowSettingForm2ViewModel.MosaicViewModel;
+                Mosaic2Service.NotifyImageAdd += AddImageQueue;
+
+
+                //Mosaic2Service.CurrentFovIndex = RowY - 1;  //此Round的第n顆
+                Mosaic2Service.MosaicEditing = true;
+
+                var framer = CurrentVisionController.Framer;
+                //var capture = Mosaic2Service.GetCapture(_mDirIdx);
+
+                var capture = CurrentVisionController.ProductSetting.RoundSettings2[_mDirIdx].Groups.Where(x => x.MultiGruopIndex == TempSingleUnitMap[MapIndexImage].MapIndex).ToArray();
+               List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+                for (int i = 0; i < TempSingleUnitMap.Count; i++)
+                {
+                    if (TempSingleUnitMap[i].UseType == "Mosaic")
+                    {
+                        mosaicMaps.Add(TempSingleUnitMap[i]);
+                    }
+                }
+                //必須拍之前再建一次Map，因為有可能多區組圖的GridX、Y不一樣，設定時會清掉Map，所以需要重新建置Map，並把要拍的Group拿到最後一個設定
+                CreateMap(mosaicMaps, MapIndexImage);
+                UseMosaicCount = mosaicMaps.Count;
+                var map = Mosaic2Service.FindMap(CurrentVisionController.ProductSetting.MosaicSettings.CameraMosaicData, 0, 0, 0, MapIndexImage);
+                Mosaic2Service.MosaicOfCamera[0].ResetImageList(map[0], capture.Length);                
+                
+                for (int i = 0; i < Mosaic2Service.GridY; i++)
+                {
+                    for (int j = 0; j < Mosaic2Service.GridX; j++)
+                    {
+
+                        var afterX = inspect.SingleToGroupX(ColX - 1);
+
+
+                        var distX = TempSingleUnitMap[MapIndexImage].MosaicPosition[i * Mosaic2Service.GridX + j].x;
+
+
+                        var afterY = inspect.SingleToGroupY(RowY - 1);
+
+                        var distY = TempSingleUnitMap[MapIndexImage].MosaicPosition[i * Mosaic2Service.GridX + j].y;
+
+                        Vision.BX1_流道橫移軸.AbsoluteMove(distX, velCX1);
+                        Vision.視覺縱移軸.AbsoluteMove(distY, velAY1);
+
+
+
+                        Mosaic2Service.SetSelectPos(j, i);
+
+                        Mosaic2Service.Capture(TempSingleUnitMap[MapIndexImage].MapIndex);
+
+                        var captureCount = Mosaic2Service.GetCapture(0, MapIndexImage);
+                        for (int takes = 0; takes < captureCount; takes++)
+                        {
+                            var takeA = _isAddImageQueue.Take();
+                        }
+                    }
+                }
+                Mosaic2Service.ShadeCorrectionMosaic(CurrentVisionController.GetHardware());
+                Mosaic2Service.BuildMosaic(0, 0, 0, TempSingleUnitMap[MapIndexImage].MapIndex, UseMosaicCount);
+                var image = Mosaic2Service.GetMosaicImage(GroupIndexList[0],0);
+
+                if (_dispatcher != null)
+                {
+                    _dispatcher.BeginInvoke(() =>
+                    {
+                        if (image != null)
+                        {
+                            Accessor?.OnShowImage(image);
+                            Accessor?.OnUpdate();
+                        }
+                    });
+
+                }
+
+
+                FlowSettingForm2ViewModel.Done();
+
+                //為了把校正資訊寫在影像上
+                FlowFormData.AttachCalibration();
+
+                OnRefreshBuffer?.Invoke();
+            }
+            else
+            {
+
+                for (int k = 0; k < TempSingleUnitMap[MapIndexImage].MosaicPosition.Count; k++)
+                {
+                    var afterX = inspect.SingleToGroupX(ColX - 1);
+                    var distX = TempSingleUnitMap[MapIndexImage].MosaicPosition[k].x;
+                    var afterY = inspect.SingleToGroupY(RowY - 1);
+
+                    var distY = TempSingleUnitMap[MapIndexImage].MosaicPosition[k].y;
+
+                    Vision.BX1_流道橫移軸.AbsoluteMove(distX, velCX1, 0);
+                    Vision.視覺縱移軸.AbsoluteMove(distY, velAY1, 0);
+                    Vision.BX1_流道橫移軸.WaitMotionDone(30000);
+                    Vision.視覺縱移軸.WaitMotionDone(30000);
+
+                    for (int i = 0; i < TempSingleUnitMap[MapIndexImage].GroupIndexes.Count; i++)
+                    {
+                        var groups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups;
+                        var target = groups.FirstOrDefault(x => x.Id == TempSingleUnitMap[MapIndexImage].GroupIndexes[i]);
+                        var targetIndex = groups.IndexOf(target);
+                        //第幾個Group
+                        for (int j = 0; j < groups[targetIndex].Captures.Count; j++)
+                        {
+                            //的第幾張影像
+
+                            //設定光源
+                            _mCapIdx = targetIndex * groups[targetIndex].Captures.Count + j;
+                            UpdateSelectIndex(targetIndex, j);
+
+                            SpinWait.SpinUntil(() => false, 300);
+                            SendGrab();
+                            SpinWait.SpinUntil(() =>
+                            {
+                                Application.DoEvents();//這樣才會即時更新畫面
+                                return false;
+                            }, 500);
+                            OnRefreshBuffer?.Invoke();
+                        }
+                    }
+                }
+            }
+        }
+
+   
+        /// 開啟微調分區位置介面
+        /// </summary>
+        public void AdjustPartPos()
+        {
+            //開一個設定offset的介面
+            List<AdjustPartPos> adjustPartPoses = new List<AdjustPartPos>();
+
+            for (int i = 0; i < TempSingleUnitMap[MapIndexImage].Offsets.Count; i++)
+            {
+                adjustPartPoses.Add(new AdjustPartPos() { Index = i, OffsetX = TempSingleUnitMap[MapIndexImage].Offsets[i].x, OffsetY=TempSingleUnitMap[MapIndexImage].Offsets[i].y });
+            }
+
+            AdjustPartPosForm adjustPartPosForm = new AdjustPartPosForm(adjustPartPoses);
+            var result = adjustPartPosForm.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                for (int i = 0; i < adjustPartPoses.Count; i++)
+                {
+                    TempSingleUnitMap[MapIndexImage].Offsets[i].x = adjustPartPoses[i].OffsetX;
+                    TempSingleUnitMap[MapIndexImage].Offsets[i].y = adjustPartPoses[i].OffsetY;
+                }
+            }
+        }
+        /// 更新元件的Source
+        /// </summary>
+        /// <param name="folderList"></param>
+        /// <param name="targetIndex"></param>
+        /// <param name="partIndex"></param>
+        public void UpdateCmpSource(FolderList folderList, int targetIndex, int partIndex = 0)
+        {
+            ReNameGroupAndCapture();
+            FlowFormData.ExternalUpdateComponent();
+            var cmpList = ((Flow2)FlowFormData._flowHandle).GetBasicComponents();
+
+            try
+            {
+                UpdateCmpCaptureName();
+            }
+            catch (Exception e)
+            {
+
+            }
+            
+            int count = 0;
+            int capture = 0;
+            int captureIndex = 0;
+            int cmpCount = folderList.Folders[folderList.Folders.Count - 1].Contain.Second - folderList.Folders[folderList.Folders.Count - 1].Contain.First;
+            for (int i = folderList.Folders[folderList.Folders.Count - 1].Contain.First; i < folderList.Folders[folderList.Folders.Count - 1].Contain.Second; i++)
+            {
+                count++;
+                if (Type != "Mosaic")
+                {
+                    var captureName = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[targetIndex + 1].Captures[0].Name;
+                    var matches = Regex.Matches(captureName, @"_(\d+)");
+                    int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    int group = int.Parse(matches[1].Groups[1].Value);
+                    captureIndex = int.Parse(matches[2].Groups[1].Value);
+                    cmpList[i].DataName = $"M{MapIndexImage}_G{targetIndex + 1}_P{partIndex}_{cmpList[i].Name}_I{i}";
+                }
+                else
+                {
+                    cmpList[i].DataName = $"M{MapIndexImage}_G{targetIndex + 1}_{cmpList[i].Name}_I{i}";
+                }
+
+                var lv4 = cmpList[i].GetDataByMode();
+                for (int j = 0; j < lv4.Count; j++)
+                {
+                    if (lv4[j].TypeName == "SourceLine3")
+                    {
+                        CandidateSource sourceTargets;
+                        if (Type != "Mosaic")
+                        {
+                            sourceTargets = SourceList.FirstOrDefault(x => x.Name.Contains($"MapIndex_{MapIndexImage};Group_{targetIndex + 1};Capture_{captureIndex}"));
+                        }
+                        else
+                        {
+                            sourceTargets = SourceList.FirstOrDefault(x => x.Name.Contains($"MapIndex_{MapIndexImage};Group_{targetIndex + 1}"));
+                        }
+
+                        var selected = sourceTargets;
+                        lv4[j]["First"].Set(selected.Index[0]);
+                        lv4[j]["Second"].Set(selected.Index[1]);
+                        lv4[j]["Third"].Set(selected.Index[2]);
+                    }
+                    if (lv4[j].TypeName == "SourceLine1")
+                    {
+                        var lv3Type = lv4[j]["Type"].Get<string>();
+                        var targetCmps = cmpList.Where(x => lv3Type.Contains(x.Name)).ToList();
+                        if (targetCmps.Count == 0)
+                        {
+                            continue;
+                        }
+                        List<int> indexes = new List<int>();
+                        foreach (var item in targetCmps)
+                        {
+                            var cmpIndex = cmpList.IndexOf(item);
+                            if (cmpIndex > i)
+                            {
+                                continue;
+                            }
+                            var diff = i - cmpIndex;
+                            indexes.Add(cmpIndex);
+                        }
+
+                        lv4[j]["First"].Set<int>(indexes[indexes.Count - 1] + 1);
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// 建立Source的名稱與index
+        /// </summary>
+        private void BuildTargetCandidate()
+        {
+            LvTypeEm wannaType = LvTypeEm.HIMAGE;
+            SourceList.Clear();
+            for (int i = 0; i < _flowData.Count; i++)
+            {
+                for (int j = 0; j < _flowData[i].Count; j++)
+                {
+                    for (int k = 0; k < _flowData[i][j].Count; k++)
+                    {
+                        if (_flowData[i][j][k].DataType == wannaType)
+                        {
+                            var candidate = new CandidateSource
+                            {
+                                Name = $"{_flowData[i].Name}-{_flowData[i][j].Name}-{_flowData[i][j][k].Name}",
+                                Index = new int[3] { i, j, k }
+                            };
+                            SourceList.Add(candidate);
+                        }
+                    }
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// 重新命名資料夾
+        /// </summary>
+        /// <param name="folderInt"></param>
+        public void ReNameFolder(List<int> folderInt)
+        {
+            var folderSetting = new Dictionary<string, Tuple<int, int>>();
+            int startCounter = 0;
+            int endCounter = 0;
+            int groupCounter = 0;
+            int partCounter = 0;
+            
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType == Type)
+                {
+                    for (int j = 0; j < TempSingleUnitMap[i].GroupIndexes.Count; j++)
+                    {
+                       
+                        endCounter += folderInt[groupCounter];
+                        if (TempSingleUnitMap[i].UseType != "Mosaic")
+                        {
+                            folderSetting.Add($"MapIndex_{i};Group_{groupCounter};Part_{partCounter}", Tuple.Create(startCounter, endCounter));
+                            partCounter++;
+                            if (partCounter == TempSingleUnitMap[i].MosaicPosition.Count)
+                            {
+                                partCounter = 0;
+                            }
+                        }
+                        else
+                        {
+                            folderSetting.Add($"MapIndex_{i};Group_{groupCounter}", Tuple.Create(startCounter, endCounter));
+                        }
+                        startCounter = endCounter;
+                        groupCounter++;
+                    }
+                }
+            }
+            var flowFolderInfo = FlowFormData._flowSetupHandle.GetFolderInfo();
+            flowFolderInfo.Folders.Clear();
+            foreach (var f in folderSetting)
+            {
+                var folderContainSetting = new ContainFolder(f.Key)
+                {
+                    Contain = new Pair<int, int>(f.Value.Item1, f.Value.Item2)
+                };
+                flowFolderInfo.Folders.Add(folderContainSetting);
+            }
+            FlowFormData._flowSetupHandle.SetFolderInfo(flowFolderInfo);
+        }
+
+        /// <summary>
+        /// 重新命名Group與Capture的名稱
+        /// </summary>
+        public void ReNameGroupAndCapture()
+        {
+            List<SingleUnitMap> mosaicMaps = new List<SingleUnitMap>();
+            List<SingleUnitMap> partMaps = new List<SingleUnitMap>();
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType == "Mosaic")
+                {
+                    mosaicMaps.Add(TempSingleUnitMap[i]);
+                }
+                else
+                {
+                    partMaps.Add(TempSingleUnitMap[i]);
+                }
+            }
+            int captureIndex = 0;
+            for (int i = 0; i < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count; i++)
+            {
+                SingleUnitMap target = null;
+                if(Type == "Mosaic")
+                {
+                    target = mosaicMaps.FirstOrDefault(x => x.GroupIndexes.Any(y => y == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Id));
+                }
+                else
+                {
+                    target = partMaps.FirstOrDefault(x => x.GroupIndexes.Any(y => y == CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Id));
+                }
+                if(target == null)
+                {
+                    continue;
+                }
+                CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Name = $"MapIndex_{target.MapIndex};Group_{i}";
+                for (int j = 0; j < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Captures.Count; j++)
+                {
+                    CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Captures[j].Name = $"MapIndex_{target.MapIndex};Group_{i};Capture_{captureIndex}";
+                    captureIndex++;
+                }
+
+            }
+        }
+
+        /// <summary>
+        /// 更新Capture的Index
+        /// </summary>
+        public void RefreshCaptureIndex()
+        {
+            CaptureCountList.Clear();
+            int capCount = 0;
+            for (int i = 0; i < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count; i++)
+            {
+                capCount = 0;
+                for (int j = 0; j < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Captures.Count; j++)
+                {
+                    capCount++;
+                }
+                CaptureCountList.Add(capCount);
+            }
+        }
+
+        /// <summary>
+        /// 更新Group與Capture的Index
+        /// </summary>
+        public void UpdateGroupCapture()
+        {
+            GroupIndexList.Clear();
+            var groups = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (TempSingleUnitMap[MapIndexImage].GroupIndexes.Any(x => x == groups[i].Id))
+                {
+                    GroupIndexList.Add(i);
+                }
+            }
+            CaptureIndexList.Clear();
+            RefreshCaptureIndex();
+            int currentTotal = 0;
+            for (int i = 0; i < GroupIndex; i++)
+            {
+                currentTotal += CaptureCountList[i];
+            }
+            if (GroupIndex >= CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count)
+            {
+                GroupIndex = 0;
+            }
+            else
+            {
+                for (int i = 0; i < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[GroupIndex].Captures.Count; i++)
+                {
+                    CaptureIndexList.Add(i + currentTotal);
+                }
+            }
+            this.RaisePropertiesChanged();
+        }
+
+        
+        /// <summary>
+        /// 重新命名元件的CustomerName
+        /// </summary>
+        public void ReNameCustomerName()
+        {
+            var cmpList = ((Flow2)FlowFormData._flowHandle).GetBasicComponents();
+            var flowFolderInfo = FlowFormData._flowSetupHandle.GetFolderInfo();
+            int count = 0;
+            int part = 0;
+            for (int i = 0; i < flowFolderInfo.Count; i++)
+            {
+                count = 0;
+                int mapIndex = 0;
+                for (int j = flowFolderInfo[i].Contain.First; j < flowFolderInfo[i].Contain.Second; j++)
+                {
+                    var matches = Regex.Matches(flowFolderInfo[i].FolderName, @"_(\d+)");
+                    mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    int groupIndex = int.Parse(matches[1].Groups[1].Value);
+                    count++;
+                    var definedName = "";
+
+                    if (Type != "Mosaic")
+                    {
+                        if (_tempCmpUserDefinedName.Count > j)
+                        {
+                            if (_tempCmpUserDefinedName[j] != "")
+                                definedName = $"_{_tempCmpUserDefinedName[j]}";
+                        }
+                        cmpList[j].DataName = $"M{mapIndex}_G{groupIndex}_P{part}_{cmpList[j].Name}_I{j}{definedName}";//M:Map、G:Group、P:Part、I:Index(從0開始)
+                    }
+                    else
+                    {
+                        if (_tempCmpUserDefinedNameMosaic.Count > j)
+                        {
+                            if (_tempCmpUserDefinedNameMosaic[j] != "")
+                                definedName = $"_{_tempCmpUserDefinedNameMosaic[j]}";
+                        }
+                        cmpList[j].DataName = $"M{mapIndex}_G{groupIndex}_{cmpList[j].Name}_I{j}{definedName}";
+                    }
+                }
+                part++;
+                if (part == TempSingleUnitMap[mapIndex].MosaicPosition.Count)
+                {
+                    part = 0;
+                }
+            }
+        }
+
+        
+        /// <summary>
+        /// flowform影像進入時，會進這段方法
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void FlowFormImageIn(object sender, FlowFormImageInArgs args)
+        {
+            //TODO 軟體觸發，再關閉flowsetting的時候，會在觸發，導致組完圖的影像會被覆蓋掉
+            args.InsertImage(_currentCapIdx);//你預期的拍攝index
+        }
+
+        /// <summary>
+        /// 視覺儲存檔案後，handler這邊也要存一些東西
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        public void VisionProductSaved(object sender, ProductSaveArgs args)
+        {
+            int capCount = 0;
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType != Type)
+                {
+                    continue;
+                }
+                TempSingleUnitMap[i].CaptureImageIndexes.Clear();
+                for (int j = 0; j < TempSingleUnitMap[i].GroupIndexes.Count; j++)
+                {
+                    var target = CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.FirstOrDefault(x => x.Id == TempSingleUnitMap[i].GroupIndexes[j]);
+                    if(target == null)
+                    {
+                        continue;
+                    }
+                    for (int k = 0; k < target.Captures.Count; k++)
+                    {
+                        TempSingleUnitMap[i].CaptureImageIndexes.Add(capCount);
+                        capCount++;
+                    }
+                }
+            }
+
+            using (StreamWriter w = new StreamWriter("D:\\TA2000\\test.json"))
+            {
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(TempSingleUnitMap, Newtonsoft.Json.Formatting.Indented);
+                w.WriteLine(json);
+                w.Close();
+            }
+
+            if (Type == "Mosaic")
+                Vision.ProductParam.LastTempMosaicMap.Clear();
+            else
+                Vision.ProductParam.LastTempPartMap.Clear();
+
+            for (int i = 0; i < TempSingleUnitMap.Count; i++)
+            {
+                if (TempSingleUnitMap[i].UseType == Type)
+                {
+                    Vision.ProductParam.BigProductMapSetting.MapList[i] = TempSingleUnitMap[i];
+                    if (TempSingleUnitMap[i].UseType == "Mosaic")
+                    {
+                        Vision.ProductParam.LastTempMosaicMap.Add(TempSingleUnitMap[i]);
+                    }
+                    else
+                    {
+                        Vision.ProductParam.LastTempPartMap.Add(TempSingleUnitMap[i]);
+                    }
+                }
+            }
+
+            if (Vision.CurrentTrayCarrier.InspectData.InspectionPostion.GetProductType() == ProductTypeEm.SmallProduct)
+            {
+                List<SingleUnitMap> smallMap = new List<SingleUnitMap>();
+                smallMap.Add(Vision.ProductParam.BigProductMapSetting.MapList[0]);
+                Vision.ProductParam.BigProductMapSetting.MapList = smallMap;
+            }
+
+            if (Type == "Mosaic")
+            {
+                Vision.ProductParam.ComponentUserDefinedNamesMosaic.Clear();
+                for (int i = 0; i < _tempCmpUserDefinedNameMosaic.Count; i++)
+                {
+                    Vision.ProductParam.ComponentUserDefinedNamesMosaic.Add(_tempCmpUserDefinedNameMosaic[i]);
+                }
+            }
+            else
+            {
+                Vision.ProductParam.ComponentUserDefinedNames.Clear();
+                for (int i = 0; i < _tempCmpUserDefinedName.Count; i++)
+                {
+                    Vision.ProductParam.ComponentUserDefinedNames.Add(_tempCmpUserDefinedName[i]);
+                }
+            }
+            Vision.SaveVisionProductParam(this, Vision);
+        }
+
+        /// <summary>
+        /// 更新選擇的光源(group與capture)
+        /// </summary>
+        /// <param name="groupIdx"></param>
+        /// <param name="inGroupCapIdx"></param>
+        private void UpdateSelectIndex(int groupIdx, int inGroupCapIdx)
+        {
+            OnLog?.Invoke("InspectionModule", "-Teach UpdateSelectIndex Start");
+            var camIdx = Math.Min(Framer.Count - 1, Math.Max(0, _mCamIdx));
+
+            int capIdx = _mCapIdx;
+            _currentCapIdx = capIdx;
+            //capIdx = Math.Max(0, capIdx);
+            ChangeCamAndCapFunc(camIdx, capIdx);
+
+            SetCurrentLightToDevice(_mDirIdx, inGroupCapIdx, groupIdx);
+            OnLog?.Invoke("InspectionModule", "-Teach UpdateSelectIndex End");
+        }
+
+        /// <summary>
+        /// 切換影像capture
+        /// </summary>
+        /// <param name="camIdx"></param>
+        /// <param name="captureIdx"></param>
+        private void ChangeCamAndCapFunc(int camIdx, int captureIdx)
+        {
+            OnLog?.Invoke("InspectionModule", $"-Teach ChangeCamAndCapFunc camIdx={camIdx},captureIdx={captureIdx}  Start");
+            ChangeCamAndCaptureIndexTrigger?.Invoke(camIdx, captureIdx);
+            OnLog?.Invoke("InspectionModule", $"-Teach ChangeCamAndCapFunc camIdx={camIdx},captureIdx={captureIdx} End");
+        }
+
+        /// <summary>
+        /// 設定光源數值
+        /// </summary>
+        /// <param name="dirIdx"></param>
+        /// <param name="capIdx"></param>
+        /// <param name="groupIdx"></param>
+        private void SetCurrentLightToDevice(int dirIdx, int capIdx, int groupIdx)
+        {
+            OnLog?.Invoke("InspectionModule", $"-Teach SetCurrentLightToDevice dirIdx={dirIdx},capIdx={capIdx}  Start");
+            if (capIdx == -1)
+                return;
+
+            var captureGroupIdx = groupIdx;//第幾個GroupCapture
+            //設定到光源上
+            var groupInfo = CurrentVisionController.ProductSetting.RoundSettings2[dirIdx].Groups[groupIdx].Captures[capIdx].Light.LightingPersentage;
+
+
+            double[] groupInfoArr = new double[16];
+            for (int i = 0; i < groupInfo.Count; i++)
+            {
+                groupInfoArr[i] = groupInfo[i];
+            }
+            SetLighting?.Invoke(groupInfoArr);
+            OnLog?.Invoke("InspectionModule", $"-Teach SetCurrentLightToDevice dirIdx={dirIdx},capIdx={capIdx},groupIdx={groupIdx}  End");
+        }
+        private void SendGrab()
+        {
+            Trigger.ManualTrigger();
+        }
+
+        public void Dispose()
+        {
+            FlowSettingForm2ViewModel?.Dispose();
+            Mosaic2Service?.Dispose();
+             _coverTreeView?.Dispose();
+        }
+/// <summary>
+        /// 拍攝灰卡流程，為了做FFC，需要取得設定影像的光場，一張Capture取一個光場
+        /// </summary>
+        public void CaptureGrayCard()
+        {
+            
+            /*
+            //1.先把產品放下
+            PutProduct();
+
+            //2.再移動到灰卡位置吸取
+
+            var velAY1 = TATool.SelectVelDef(Vision.AY1_吸嘴縱移軸, Vision.AY1VelList, MoveVel);
+            var velAZ1 = TATool.SelectVelDef(Vision.AZ1_吸嘴升降軸, Vision.AZ1VelList, MoveVel);
+            var velCX1 = TATool.SelectVelDef(Vision.CX1_視覺橫移軸, Vision.CX1VelList, MoveVel);
+            Vision.AY1_吸嘴縱移軸.AbsoluteMove(BATool.GrayCard_AY1, velAY1);
+
+            Vision.Y067008_灰卡模組_上升氣缸電磁閥.SetIO(true);
+            if(!SpinWait.SpinUntil(() => Vision.X066009_灰卡模組_上升檢知.CheckIO(), 5000))
+            {
+                MessageBox.Show("灰卡模組未上升");
+            }
+            Vision.AY1_吸嘴縱移軸.WaitMotionDone(30000);
+
+            Vision.AZ1_吸嘴升降軸.AbsoluteMove(BATool.GrayCard_AZ1, velAZ1);
+            Vision.AZ1_吸嘴升降軸.WaitMotionDone(30000);
+
+            Vision.SuckerModuleThis.SuckerController.SingleSuck(1);
+            SpinWait.SpinUntil(() => false, 100);
+            Vision.SuckerModuleThis.SuckerController.AllSuckerUpdate();
+            //判斷吸嘴是否吸取成功
+            SpinWait.SpinUntil(() => false, 100);
+
+            var isSuck = Vision.SuckerModuleThis.SuckerController.GetIsSucked(0, 1);
+            if (!isSuck)
+            {
+                //吸取失敗
+                MessageBox.Show("吸取失敗");
+                return;
+            }
+
+            //3.然後移動到取像位置
+            Vision.AY1_吸嘴縱移軸.AbsoluteMove(BATool.LightCalib_AY1, velAY1);
+            Vision.AZ1_吸嘴升降軸.AbsoluteMove(BATool.LightCalib_AZ1, velAZ1);
+            Vision.CX1_視覺橫移軸.AbsoluteMove(BATool.LightCalib_CX1, velCX1);
+
+
+
+            //4.取像切光，然後儲存光場影像
+            //TODO 打光要加入可以調整pulsewidth，怕拍灰卡會過曝，所以需要等比例調暗，我只是要取光場，應該還好，就只是讓它不要255
+
+            for (int i = 0; i < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups.Count; i++)
+            {
+                for (int j = 0; j < CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Captures.Count; j++)
+                {
+                    //設定光源
+                    _mCapIdx = i * CurrentVisionController.ProductSetting.RoundSettings2[0].Groups[i].Captures.Count + j;
+                    UpdateSelectIndex(i, j);
+
+                    SpinWait.SpinUntil(() => false, 300);
+                    SendGrab();
+                    //TODO 加入存光場影像，需要VisionCotroller提供方法
+                    SpinWait.SpinUntil(() =>
+                    {
+                        Application.DoEvents();//這樣才會即時更新畫面
+                        return false;
+                    }, 500);
+                }
+            }
+            OnRefreshBuffer?.Invoke();
+
+            //5.然後再把灰卡放回
+            Vision.AY1_吸嘴縱移軸.AbsoluteMove(BATool.GrayCard_AY1, velAY1);
+
+            if (!SpinWait.SpinUntil(() => Vision.X066009_灰卡模組_上升檢知.CheckIO(), 5000))
+            {
+                Vision.Y067008_灰卡模組_上升氣缸電磁閥.SetIO(true);
+            }
+            SpinWait.SpinUntil(() => Vision.X066009_灰卡模組_上升檢知.CheckIO(), 5000);
+
+            Vision.AY1_吸嘴縱移軸.WaitMotionDone(30000);
+
+            Vision.AZ1_吸嘴升降軸.AbsoluteMove(BATool.GrayCard_AZ1, velAZ1);
+            Vision.AZ1_吸嘴升降軸.WaitMotionDone(30000);
+            Vision.SuckerModuleThis.SuckerController.SingleEject(1);
+            SpinWait.SpinUntil(() => false, 100);
+            Vision.SuckerModuleThis.SuckerController.AllSuckerUpdate();
+            //判斷吸嘴是否吸取成功
+            SpinWait.SpinUntil(() => false, 100);
+
+            isSuck = Vision.SuckerModuleThis.SuckerController.GetIsSucked(0, 1);
+            if (isSuck)
+            {
+                //吸取失敗
+                MessageBox.Show("放灰卡失敗");
+            }
+            //下降灰卡
+            Vision.Y067008_灰卡模組_上升氣缸電磁閥.SetIO(false);
+
+            //6.再移動到取產品位置，然後移動到取像位置拍照
+            GetProduct();
+            Capture();
+
+            */
+        }
+
+        /// <summary>
+        /// 確定是否flowsetting有按下done
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void OnFlowSettingDoEvent(object sender, EventArgs e)
+        {
+            IsFlowSettingDoneEvent = true;
+        }
+
+        /// <summary>
+        /// 加入image的queue，判斷每次取像是都有拍到
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AddImageQueue(object sender, List<HTA.Utility.Structure.CustomImage> e)
+        {
+            IsAddImage = true;
+            _isAddImageQueue.Add(IsAddImage);
+        }
+    }
+
+    public class AdjustPartPos
+    {
+        public int Index { get; set; }
+        public double OffsetX { get; set; }
+        public double OffsetY { get; set; }
+    }
+}

@@ -1,0 +1,479 @@
+﻿using DevExpress.Mvvm.DataAnnotations;
+using DevExpress.XtraGrid;
+using DevExpress.XtraGrid.Views.Grid;
+using DevExpress.XtraTab;
+using HTA.InspectionFlow;
+using HTA.MainController;
+using HTA.Utility.Common;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using VisionController2.VisionController.Common;
+using static VisionController2.VisionController.Common.ComponentSpecMap;
+
+namespace TA2100Modules
+{
+    public partial class StatisticTableForm2 : DevExpress.XtraEditors.XtraForm
+    {
+        public StatisticTableViewModel2 ViewModel;
+        public List<GridView> GridContainers = new List<GridView>();
+        public StatisticTableForm2(InspectionModule module)
+        {
+            InitializeComponent();
+            if (!mvvmContext1.IsDesignMode)
+                InitializeBindings(module);
+        }
+        void InitializeBindings(InspectionModule module)
+        {
+            var fluent = mvvmContext1.OfType<StatisticTableViewModel2>();
+            ViewModel = fluent.ViewModel;
+            fluent.ViewModel.OnAddTabMapGrid = AddTabMapGrid;
+            fluent.ViewModel.OnRefreshData = RefreshData;
+            fluent.ViewModel.Init(module);
+            gridControl1.DataSource = fluent.ViewModel.ProductDatas;
+            GridContainers.Add(gridView1);
+        }
+
+        public void AddTabMapGrid(int mapIndex,List<ViewFormData> viewFormDatas)
+        {
+            XtraTabPage tabPage = new XtraTabPage();
+            tabPage.Text = $"Map{mapIndex}";
+            tabPage.Name = $"Map{mapIndex}";
+
+            // 建立 GridControl
+            DevExpress.XtraGrid.GridControl grid = new DevExpress.XtraGrid.GridControl();
+            DevExpress.XtraGrid.Views.Grid.GridView view = new DevExpress.XtraGrid.Views.Grid.GridView();
+
+            grid.MainView = view;
+            grid.Dock = DockStyle.Fill;
+            grid.DataSource = viewFormDatas;
+            // 加入到 Tab
+            tabPage.Controls.Add(grid);
+            GridContainers.Add(view);
+            // 加入到 TabControl
+            xtraTabControl1.TabPages.Add(tabPage);
+        }
+        public void RefreshData()
+        {
+            for (int i = 0; i < GridContainers.Count; i++)
+            {
+                GridContainers[i].RefreshData();
+            }
+        }
+    }
+
+    [POCOViewModel]
+    public class StatisticTableViewModel2
+    {
+        public List<ViewFormData> ProductDatas { get; set; } = new List<ViewFormData>();
+        public List<List<ViewFormData>> MapDatas { get; set; } = new List<List<ViewFormData>>();
+        private InspectionModule _module;
+        public Action<int, List<ViewFormData>> OnAddTabMapGrid;
+        public List<List<string>> MosaicResult = new List<List<string>>();
+        public List<List<string>> PartResult = new List<List<string>>();
+        public Action OnRefreshData;
+        public void Init(InspectionModule module)
+        {
+            _module = module;
+            FailLinkViewModel failLinkViewModel = new FailLinkViewModel();
+            failLinkViewModel.Init(_module);
+            failLinkViewModel.Save();
+            InitItem();
+        }
+
+        public void InitData()
+        {
+            MosaicResult = new List<List<string>>();
+            PartResult = new List<List<string>>();
+        }
+        public void InitialCounts()
+        {
+            for (int i = 0; i < ProductDatas.Count; i++)
+            {
+                ProductDatas[i].InitialCount();
+            }
+            for (int i = 0;i < MapDatas.Count; i++)
+            {
+                for(int j = 0; j < MapDatas[i].Count; j++)
+                {
+                    MapDatas[i][j].InitialCount();
+                }
+            }
+        }
+        public void InitItem()
+        {
+            ProductDatas.Add(new ViewFormData("Total", 0, 0, 0));
+            for (int i = 0; i < _module.ProductParam.BigProductMapSetting.MapList.Count; i++)
+            {
+                MapDatas.Add(new List<ViewFormData>());
+                MapDatas[i].Add(new ViewFormData("Total", 0, 0, 0));
+            }
+            for (int i = 0; i < _module.ProductParam.FailTableLinks.Count; i++)
+            {
+                MapDatas[_module.ProductParam.FailTableLinks[i].MapIndex].Add(new ViewFormData(_module.ProductParam.FailTableLinks[i].LinkName, 0, 0, 0) { CmpIndex = _module.ProductParam.FailTableLinks[i].Spec.ComponentIndex });
+                ProductDatas.Add(new ViewFormData(_module.ProductParam.FailTableLinks[i].LinkName, 0, 0, 0) { CmpIndex = _module.ProductParam.FailTableLinks[i].Spec.ComponentIndex });
+            }
+
+
+            var componentSpecMap = ((MainController)_module.VisionController_Mosaic).GetComponentSpecMaps();
+            var componentSpecMap2 = ((MainController)_module.VisionController).GetComponentSpecMaps();
+            for (int i = 0; i < componentSpecMap.CanCauseInvalidItems.Count; i++)
+            {
+                if (componentSpecMap.CanCauseInvalidItems[i].Name.Contains("DefectClassifier2"))
+                    continue;
+                var matches = Regex.Matches(componentSpecMap.CanCauseInvalidItems[i].CustomName, @"(\d+)");
+                int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                if (!_module.ProductParam.BigProductMapSetting.MapList.Any(x => x.MapIndex == mapIndex && x.UseType == "Mosaic"))
+                {
+                    continue;
+                }
+                ProductDatas.Add(new ViewFormData(componentSpecMap.CanCauseInvalidItems[i].CustomName, 0, 0, 0));
+                MapDatas[mapIndex].Add(new ViewFormData(componentSpecMap.CanCauseInvalidItems[i].CustomName, 0, 0, 0));
+            }
+            for (int i = 0; i < componentSpecMap2.CanCauseInvalidItems.Count; i++)
+            {
+                if (componentSpecMap2.CanCauseInvalidItems[i].Name.Contains("DefectClassifier2"))
+                    continue;
+                var matches = Regex.Matches(componentSpecMap2.CanCauseInvalidItems[i].CustomName, @"(\d+)");
+                int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                if (!_module.ProductParam.BigProductMapSetting.MapList.Any(x => x.MapIndex == mapIndex && x.UseType != "Mosaic"))
+                {
+                    continue;
+                }
+                ProductDatas.Add(new ViewFormData(componentSpecMap2.CanCauseInvalidItems[i].CustomName, 0, 0, 0));
+                MapDatas[mapIndex].Add(new ViewFormData(componentSpecMap2.CanCauseInvalidItems[i].CustomName, 0, 0, 0));
+            }
+
+            for (int i = 0; i < MapDatas.Count; i++)
+            {
+                OnAddTabMapGrid?.Invoke(i, MapDatas[i]);
+            }
+        }
+
+        public  void SetStatisticCount(GrabInfos grabInfos, string useType)
+        {
+            IMainController currentController;
+            if (useType == "Mosaic")
+            {
+                currentController = _module.VisionController_Mosaic;
+            }
+            else
+            {
+                currentController = _module.VisionController;
+            }
+
+            for (int i = 0; i < grabInfos.FOVInfos.Count; i++)
+            {
+                if (MosaicResult.Count <= i)
+                {
+                    MosaicResult.Add(new List<string>());
+                    PartResult.Add(new List<string>());
+                }
+                for (int j = 0; j < grabInfos.FOVInfos[i].ICs.Count; j++)
+                {
+                    MosaicResult[i].Add("Pass");
+                    PartResult[i].Add("Pass");
+                }
+            }
+
+            for (int i = 0; i < grabInfos.FOVInfos.Count; i++)
+            {
+                for (int j = 0; j < grabInfos.FOVInfos[i].ICs.Count; j++)
+                {
+                    var ic = grabInfos.FOVInfos[i].ICs[j];
+                    //產品總結果
+                    if (useType == "Mosaic")
+                    {
+                        //第一次，就直接設定
+                        if (ic.Result == ProductResultEm.Pass)
+                        {
+                            ProductDatas[0].Pass++;
+                            MosaicResult[i][j] = "Pass";
+                        }
+                        else if (ic.Result == ProductResultEm.Fail)
+                        {
+                            ProductDatas[0].Fail++;
+                            MosaicResult[i][j] = "Fail";
+                        }
+                        else if (ic.Result == ProductResultEm.Invalid)
+                        {
+                            ProductDatas[0].Invalid++;
+                            MosaicResult[i][j] = "Invalid";
+                        }
+                    }
+                    else if (useType == "Not Mosaic")
+                    {
+                        if (ic.Result == ProductResultEm.Invalid)
+                        {
+                            if (MosaicResult[i][j] == "Pass")
+                            {
+                                ProductDatas[0].Pass--;
+                                ProductDatas[0].Invalid++;
+                            }
+                            else if (MosaicResult[i][j] == "Fail")
+                            {
+                                ProductDatas[0].Fail--;
+                                ProductDatas[0].Invalid++;
+                            }
+                            PartResult[i][j] = "Invalid";
+                        }
+                        else if (ic.Result == ProductResultEm.Fail)
+                        {
+                            if (MosaicResult[i][j] == "Pass")
+                            {
+                                ProductDatas[0].Pass--;
+                                ProductDatas[0].Fail++;
+                            }
+                            PartResult[i][j] = "Fail";
+                        }
+                        else if (ic.Result == ProductResultEm.Pass)
+                        {
+                            PartResult[i][j] = "Pass";
+                        }
+                    }
+
+
+                    //產品區域結果
+                    var specMap = ((MainController)currentController).GetComponentSpecMaps();
+                    var folder = ((Flow2)((MainController)currentController).FlowHandle).GetFolderInfo();
+                    List<SpecDescription> realFailList = new List<SpecDescription>();
+                    List<ComponentDescription> realInvalidList = new List<ComponentDescription>();
+                    for (int f = 0; f < ic.FailIndex.Count; f++)
+                    {
+                        realFailList.Add(specMap.CanCauseFailItems[ic.FailIndex[f]]);
+                    }
+                    for (int f = 0; f < ic.Invalid.Count-1; f++)
+                    {
+                        realInvalidList.Add(specMap.CanCauseInvalidItems[ic.Invalid[f]-1]);
+                    }
+                    //判斷區域的總結果
+                    //區域總結果都在第0個
+                    foreach (var m in _module.ProductParam.BigProductMapSetting.MapList)
+                    {
+                        if (m.UseType != useType)
+                            continue;
+                        if (realInvalidList.Any(x => x.CustomName.Contains($"M{m.MapIndex}")))
+                        {
+                            MapDatas[m.MapIndex][0].Invalid++;
+                            continue;
+                        }
+                        if(realFailList.Any(x => x.Name.Contains($"M{m.MapIndex}")))
+                        {
+                            MapDatas[m.MapIndex][0].Fail++;
+                            continue;
+                        }
+                        MapDatas[m.MapIndex][0].Pass++;
+                    }
+
+
+                    //Invalid，編號0為影像，元件從1開始，最後會再多一個FinalResult填在最後(可以不用管finalResult)
+                    foreach (var productData in ProductDatas)
+                    {
+                        if (productData.Label == "Total")
+                            continue;
+
+                        string targetName = "";
+                        var link = _module.ProductParam.FailTableLinks.FirstOrDefault(x => x.LinkName == productData.Label);
+                        if(link == null)
+                        {
+                            var matches = Regex.Matches(productData.Label, @"(\d+)");
+                            int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                            if (_module.ProductParam.BigProductMapSetting.MapList[mapIndex].UseType != useType)
+                                continue;
+                            targetName = productData.Label;
+                        }
+                        else
+                        {
+                            var matches = Regex.Matches(link.Name, @"(\d+)");
+                            int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                            if (_module.ProductParam.BigProductMapSetting.MapList[mapIndex].UseType != useType)
+                                continue;
+                            targetName = link.Name;
+                        }
+
+                        if (realInvalidList.Any(x => x.CustomName == targetName))
+                        {
+                            productData.Invalid++;
+                            continue;
+                        }
+                        var exist = realFailList.Any(item =>
+                        {
+                            if(item.UniSpec == null)
+                            {
+                                if (item.Name == targetName)
+                                {
+                                    return true;
+                                }
+                            }
+                            else
+                            {
+                                var specTarget = ic.SpecResultInfos.FirstOrDefault(x => targetName ==  x.cmpName + "-" + x.name);
+                                if(!specTarget.Equals(default(SpecResultInfo)))
+                                {
+                                    if (specTarget.PassFailOverAll == false)
+                                        return true;
+                                }
+                                else
+                                {
+                                    foreach (var spec in item.UniSpec)
+                                    {
+                                        if (item.Name + "-" + spec.Name == targetName)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                            return false;
+                        });
+                        if (exist)
+                        {
+                            productData.Fail++;
+                            continue;
+                        }
+                        productData.Pass++;
+                    }
+
+                    foreach (var m in _module.ProductParam.BigProductMapSetting.MapList)
+                    {
+                        if (m.UseType != useType)
+                            continue;
+                        foreach (var mapData in MapDatas[m.MapIndex])
+                        {
+                            if (mapData.Label == "Total")
+                                continue;
+
+                            string targetName = "";
+                            var link = _module.ProductParam.FailTableLinks.FirstOrDefault(x => x.LinkName == mapData.Label);
+                            if(link == null)
+                            {
+                                targetName = mapData.Label;
+                            }
+                            else
+                            {
+                                targetName = link.Name;
+                            }
+
+                            if (realInvalidList.Any(x => x.CustomName == targetName))
+                            {
+                                mapData.Invalid++;
+                                continue;
+                            }
+                            var exist = realFailList.Any(item =>
+                            {
+                                if (item.UniSpec == null)
+                                {
+                                    if (item.Name == targetName)
+                                    {
+                                        return true;
+                                    }
+                                }
+                                else
+                                {
+                                    var specTarget = ic.SpecResultInfos.FirstOrDefault(x => targetName ==  x.cmpName + "-" + x.name);
+                                    if (!specTarget.Equals(default(SpecResultInfo)))
+                                    {
+                                        if (specTarget.PassFailOverAll == false)
+                                            return true;
+                                    }
+                                    else
+                                    {
+                                        foreach (var spec in item.UniSpec)
+                                        {
+                                            if (item.Name + "-" + spec.Name == targetName)
+                                            {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                                return false;
+                            });
+                            if (exist)
+                            {
+                                mapData.Fail++;
+                                continue;
+                            }
+                            mapData.Pass++;
+                        }
+                    }
+
+
+                    //foreach (var item in realInvalidList)
+                    //{
+                    //    var target = ProductDatas.FirstOrDefault(x => x.Label == item.CustomName);
+                    //    if(target != null)
+                    //        target.Invalid++;
+
+                    //    var matches = Regex.Matches(item.CustomName, @"(\d+)");
+                    //    int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    //    var target2 = MapDatas[mapIndex].FirstOrDefault(x => x.Label == item.CustomName);
+                    //    if(target2 != null)
+                    //        target2.Invalid++;
+                    //}
+                    ////Fail
+                    //foreach (var item in realFailList)
+                    //{
+                        
+                    //    if (item.UniSpec == null)
+                    //    {
+                    //        var targetDefect = ic.RegionResultInfos.FirstOrDefault(x => x.CustomName == item.Name);
+                    //        var target2 = ProductDatas.Where(x => x.CmpIndex == item.Source && x.Label.StartsWith(item.Name)).ToList();
+                    //        foreach (var data in target2)
+                    //        {
+                    //            data.Fail++;
+                    //        }
+                    //        var matches = Regex.Matches(item.Name, @"(\d+)");
+                    //        int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    //        var targetM = MapDatas[mapIndex].Where(x => x.CmpIndex == item.Source && x.Label.StartsWith(item.Name)).ToList();
+                    //        foreach(var data in targetM)
+                    //        {
+                    //            data.Fail++;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        var targetSpecs = ic.SpecResultInfos.Where(x => x.cmpName == item.Name).ToList();
+                    //        var matches = Regex.Matches(item.Name, @"(\d+)");
+                    //        int mapIndex = int.Parse(matches[0].Groups[1].Value);
+                    //        foreach (var spec in targetSpecs)
+                    //        {
+                    //            var link = _module.ProductParam.FailTableLinks.FirstOrDefault(x => x.Name == spec.cmpName + "-" + spec.name);
+                    //            if(link != null)
+                    //            {
+                    //                var p = ProductDatas.FirstOrDefault(x => x.Label == link.LinkName);
+                    //                if (p != null)
+                    //                    p.Fail++;
+                    //                var targetM = MapDatas[mapIndex].FirstOrDefault(x => x.Label == link.LinkName);
+                    //                if (targetM != null)
+                    //                    targetM.Fail++;
+                    //            }
+                    //            else
+                    //            {
+                    //                var p = ProductDatas.FirstOrDefault(x => x.Label == spec.cmpName + "-" + spec.name);
+                    //                if (p != null)
+                    //                    p.Fail++;
+                    //                var targetM = MapDatas[mapIndex].FirstOrDefault(x => x.Label == spec.cmpName + "-" + spec.name);
+                    //                if (targetM != null)
+                    //                    targetM.Fail++;
+                    //            }
+                                
+                    //        }
+                    //    }
+
+                    //}
+                }
+                OnRefreshData?.Invoke();
+            }
+        }
+    }
+}

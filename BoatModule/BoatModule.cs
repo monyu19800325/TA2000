@@ -1,0 +1,2057 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Hta.Container;
+using HTAMachine.Machine;
+using HTA.Utility.Common;
+using HTA.Utility.Structure;
+using System.Threading;
+using Hta.ModuleImplement;
+using HTA.SecsBase;
+using ObjectDraw;
+using HTA.Utility;
+using Calibration.Halcon;
+using ModuleTemplate;
+using System.Collections;
+//using static TA2000Modules.InspectionPostion;
+//using Hta.MotionBase;
+using HTA.MainController;
+using HTAMachine.Module;
+using TA2000Modules;
+//using Hta.MotionBase.Interface;
+using VisionController2.MosaicController;
+using Hta.MotionBase.Interface;
+using Hta.MotionBase;
+using HTA.Com.WCF.DuplexService;
+
+namespace TA2000Modules
+{
+    public enum ProductTypeEm
+    {
+        BigProduct = 0,
+        SmallProduct
+    }
+
+
+    public partial class BoatModule :  IModule, ICanSaveParam
+    {
+        [DefineHardware] public IGantry 視覺縱移軸;
+        //[DefineHardware] public IAxis AY2_視覺縱移軸_右;
+        [DefineHardware] public IAxis BX1_流道橫移軸; // 含干涉確認機制
+        [DefineHardware] public IAxis BX2_流道傳送軸; //皮帶傳送
+        [DefineHardware] public IAxis BZ1_流道頂升升降軸;
+
+        public IMainController Boat_VisionController; //視覺站
+
+        
+
+        #region 產品設定檔
+        /// <summary>
+        /// 根據產品檔的個別設定
+        /// </summary>
+        [ModuleProductSetting] public BoatLayoutSetting Settings = new BoatLayoutSetting();  //Boat Layout
+
+        [ModuleGlobalSetting] public MachineTraySetting GlobalSettings = new MachineTraySetting(); //視覺站數量
+
+        [ModuleProductSetting] public InspectionPostion.ProductMeasureToolClass ProductMeasureToolInfo = new InspectionPostion.ProductMeasureToolClass();
+
+        public BoatLayoutSettingForm _BoatLayoutSettingForm = null;
+        #endregion
+
+
+        #region SecsSV Setting
+
+       /// <summary>
+       /// Boat Row Num
+       /// </summary>
+       [SecsSV("SV_Boat_RowNum", true, false)]
+        public int RowNum
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.SubDimSize.Y;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.SubDimSize.Y == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.SubDimSize = new Point(Settings.TrayInfo.BlockContainerDesc.SubDimSize.X, value);
+            }
+        }
+
+        /// <summary>
+        /// Boat Col Num
+        /// </summary>
+        [SecsSV("SV_Boat_ColNum", true, false)]
+        public int ColNum
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.SubDimSize.X;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.SubDimSize.X == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.SubDimSize = new Point(value, Settings.TrayInfo.BlockContainerDesc.SubDimSize.Y);
+            }
+        }
+
+        /// <summary>
+        /// Boat First Gap_X
+        /// </summary>
+        [SecsSV("SV_Boat_FirstGapX", true, false)]
+        public double FirstGapX
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.FirstGap.X;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.FirstGap.X == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.FirstGap = new Point2D(value, Settings.TrayInfo.BlockContainerDesc.FirstGap.Y);
+            }
+        }
+        /// <summary>
+        /// Boat First Gap_Y
+        /// </summary>
+        [SecsSV("SV_Boat_FirstGapY", true, false)]
+        public double FirstGapY
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.FirstGap.Y;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.FirstGap.Y == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.FirstGap = new Point2D(Settings.TrayInfo.BlockContainerDesc.FirstGap.X, value);
+            }
+        }
+        /// <summary>
+        /// Boat Boat Size_X
+        /// </summary>
+        [SecsSV("SV_Boat_BoatSizeX", true, false)]
+        public double BoatSizeX
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.ContainerSize.X;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.ContainerSize.X == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.ContainerSize = new Point2D(value, Settings.TrayInfo.BlockContainerDesc.ContainerSize.Y);
+            }
+        }
+        /// <summary>
+        /// Boat Boat Size_Y
+        /// </summary>
+        [SecsSV("SV_Boat_BoatSizeY", true, false)]
+        public double BoatSizeY
+        {
+            get => Settings.TrayInfo.BlockContainerDesc.ContainerSize.Y;
+            set
+            {
+                if (Settings.TrayInfo.BlockContainerDesc.ContainerSize.Y == value)
+                    return;
+                Settings.TrayInfo.BlockContainerDesc.ContainerSize = new Point2D(Settings.TrayInfo.BlockContainerDesc.ContainerSize.X, value);
+            }
+        }
+        /// <summary>
+        /// Boat IC Size_X
+        /// </summary>
+        [SecsSV("SV_Boat_ICSizeX", true, false)]
+        public double ICSizeX
+        {
+            get => Settings.TrayInfo.IcDesc.ContainerSize.X;
+            set
+            {
+                if (Settings.TrayInfo.IcDesc.ContainerSize.X == value)
+                    return;
+                Settings.TrayInfo.IcDesc.ContainerSize = new Point2D(value, Settings.TrayInfo.BlockContainerDesc.ContainerSize.Y);
+            }
+        }
+        /// <summary>
+        /// Boat IC Size_Y
+        /// </summary>
+        [SecsSV("SV_Boat_ICSizeY", true, false)]
+        public double ICSizeY
+        {
+            get => Settings.TrayInfo.IcDesc.ContainerSize.Y;
+            set
+            {
+                if (Settings.TrayInfo.IcDesc.ContainerSize.Y == value)
+                    return;
+                Settings.TrayInfo.IcDesc.ContainerSize = new Point2D(Settings.TrayInfo.BlockContainerDesc.ContainerSize.X, value);
+            }
+        }
+
+
+        #endregion
+
+
+        #region sys data
+        public int CurrentCount { get; set; } = 1;
+
+        public string UserName { get; set; }
+        public Guid UniqId { get; set; }
+        public Action<string> LogFunc { get; set; }
+        public Action<string> DebugFunc { get; set; }
+
+
+
+
+
+        #endregion
+
+        #region Receive Funtion
+        [DefineBroadcastReceive]
+        public void ReceiveVisionControl(object sender, VisionControllerArgs args)
+        {
+            Boat_VisionController = args.VisionController;
+        }
+
+        /// <summary>
+        /// 觸發該方法，寫入 Boat Carrier 相關定位與檢測參數 (廣播、交握) Key_Funtion in this Module
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        [DefineEventReceive]
+        [DefineBroadcastReceive]
+        public void OnRequestTray(object sender, BoatCarrier args)
+        {
+            try
+            {
+                var newTray = Settings.TrayInfo.GenerateTray(); //建立Tray盤資料
+                newTray.MirrorX = true;//將TrayView原點，從左上角改在右上角
+                var layout = newTray.Layout; //取得Tray盤Layout
+                List<List<TAProductInfo>> productInfos = new List<List<TAProductInfo>>(); //建立產品資訊ProductInfo
+                //依序(行、列) 寫入該"產品"資訊
+                for (int r = 0; r < layout.Y; r++)
+                {
+                    productInfos.Add(new List<TAProductInfo>());
+                    for (int c = 0; c < layout.X; c++)
+                    {
+                        //建立Tray資料容器
+                        newTray.SetObject(r, c, new IcObject(GlobalSettings.NumOfTotalController)); //寫入 Global Settings 控制站數目**
+                        //寫入產品資訊
+                        productInfos[r].Add(new TAProductInfo()); // 寫入產品資訊
+                        productInfos[r][c].Row = r + 1; //寫入該產品資訊 (排)
+                        productInfos[r][c].Col = c + 1; //寫入該產品資訊 (列)
+                        productInfos[r][c].BigMapResults = new List<BigMapResult>();
+                        productInfos[r][c].BigMapResults.Add(new BigMapResult());
+                    }
+                }
+
+                args.Count = CurrentCount; //寫入 args.Count 目前計數
+                args.Tray = newTray;//寫入 Tray 資料
+                if (ProductName == "") ProductName = args.RecipeName; //啟動程式時
+
+                bool bMyProductInfo = Settings.bUseSingleIC ? true : (Settings.bUseStripe ? false : true);
+                int bNyFOVProductState = 0;
+                int FOVProductXNum = Settings.bFOVProductXNum;
+                int FOVProductYNum = Settings.bFOVProductYNum;
+                int BlockColNum = Settings.TrayInfo.BlockContainerDesc.SubDimSize.X;
+                int BlockRowNum = Settings.TrayInfo.BlockContainerDesc.SubDimSize.Y;
+
+                if (Settings.bUseFOVSingleProduct) { bNyFOVProductState = 0; }
+                else if (Settings.bUseFOVMultieProduct) { bNyFOVProductState = 2; }
+                else if (Settings.bUseFOVMultiProductMax) { bNyFOVProductState = 1; }
+
+                InspectionPostion inspectionPostion = new InspectionPostion(args, Settings.IsFovSingle, ProductName, 
+                    args.IsCalBig, bMyProductInfo, bNyFOVProductState, FOVProductXNum, FOVProductYNum,
+                   BlockColNum, BlockRowNum); //實作boat盤影像定位位置資訊
+                
+                
+                args.InspectData = new InspectDatabase(); //寫入檢測相關參數實體
+                args.InspectData.InspectionPostion = inspectionPostion;//寫入boat盤影像定位位置資訊實體
+                args.ProductInfos = productInfos;  //寫入產品資訊
+                //如果是提前拿，不是真正做事的，就不用加計數
+                if (args.IsPreUse == false) { CurrentCount++; }
+                if (inspectionPostion.GetProductType() == ProductTypeEm.BigProduct)
+                    args.IsBigProduct = true;                               
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.StackTrace + " " + e.Message);
+            }
+        }       
+
+
+        public string ProductName = "";
+
+        [DefineBroadcastReceive]
+        public void OnLotChange(object sender, LotChangeArgs args)
+        {
+            //Interlocked.Exchange(ref CurrentCount, 1);
+            object locker = new object(); //當建立物件建立，初始化 CurrentCount
+            lock (locker)
+            {
+                CurrentCount = 1;
+            }
+        }
+
+        [DefineBroadcastReceive]
+        public void OnProductChange(object sender, ProductChangeArgs args)
+        {
+            //Interlocked.Exchange(ref CurrentCount, 1);
+            object locker = new object();
+            lock (locker)
+            {
+                CurrentCount = 1;
+            }
+            ProductName = args.ProductName;
+        }
+
+        [DefineBroadcastReceive]
+        public void OnQueryLayout(object sender, QueryTrayLayoutArgs args)
+        {
+            args.Desc = this.Settings.TrayInfo;
+            args.CheckStationCount = GlobalSettings.NumOfTotalController;
+        }
+
+        [DefineBroadcastReceive]
+        public void SetMosaicPos(object sender, MosaicPosArgs pos)
+        {
+            Settings.MosaicPos.Clear();
+            for (int i = 0; i < pos.MosaicPos.Count; i++)
+            {
+                Settings.MosaicPos.Add(new Point2d() { x = pos.MosaicPos[i].x, y = pos.MosaicPos[i].y });
+            }
+            SaveProductParam?.Invoke(this, this);
+        }
+
+        public void SaveBoatProductParam(object sender, IModule module)
+        {
+            SaveProductParam?.Invoke(this, this);
+        }      
+
+        [DefineBroadcast]
+
+        public event EventHandler<IModule> SaveGlobalParam;
+        public event EventHandler<IModule> SaveProductParam;            
+
+        public event EventHandler<BoatLayoutSetting> UpdateBoatLayoutSettingForm;
+        #endregion
+
+
+        #region funtion
+
+        public void Dispose()
+        {
+
+        }
+
+        #endregion
+
+
+        #region Module Product Setting Form (Show in CDI2.0)
+        
+       [HTAMachine.Machine.ModuleProductSettingForm]
+        public object GetSettingForm()
+        {
+            _BoatLayoutSettingForm = new BoatLayoutSettingForm(Settings,this);
+            return _BoatLayoutSettingForm;
+        }
+
+        [AdvanceSettingForm]
+        [HTAMachine.Machine.ModuleGlobalSettingForm]
+        public object GetGlobalForm()
+        {
+            return new BoatGlobalSettingForm(GlobalSettings);
+        }
+        #endregion
+                
+    }
+
+    /// <summary>
+    /// Boat Layout Setting (class) Boat盤設定參數
+    /// </summary>
+    [Serializable]
+    public class BoatLayoutSetting
+    {
+        /// <summary>
+        ///  Tray = Boat Info
+        /// </summary>
+        public TrayDesc TrayInfo = new TrayDesc();
+        /// <summary>
+        /// 是否一個FOV拍單顆產品，LI只會有一個FOV拍單顆，我們不讓他一個FOV多顆，但怕之後會需要，所以參數先留著，介面先隱藏
+        /// </summary>
+        public bool IsFovSingle { get; set; } = true;
+        public List<Point2d> MosaicPos { get; set; } = new List<Point2d>();
+
+        /// <summary>
+        /// 使用Tray or Boat產品
+        /// </summary>
+        public bool bUseSingleIC { get; set; } = true;
+        /// <summary>
+        /// 使用Stripe產品
+        /// </summary>
+        public bool bUseStripe { get; set; } = false;
+
+
+        /// <summary>
+        /// 一個FOV拍單顆產品
+        /// </summary>
+        public bool bUseFOVSingleProduct { get; set; } = true;
+        /// <summary>
+        /// 一個FOV拍多顆產品 (MAX)
+        /// </summary>
+        public bool bUseFOVMultiProductMax { get; set; } = false;
+        /// <summary>
+        /// 一個FOV拍多顆產品 (Setting)
+        /// </summary>
+        public bool bUseFOVMultieProduct { get; set; } = false;
+
+        /// <summary>
+        /// 一個FOV拍多顆產品數量(X)
+        /// </summary>
+        public int bFOVProductXNum { get; set; } = 1;
+        /// <summary>
+        /// 一個FOV拍多顆產品數量(Y)
+        /// </summary>
+        public int bFOVProductYNum { get; set; } = 1;
+
+
+        public TrayDesc StripeInfo { get; set; } = new TrayDesc();
+    }
+
+    /// <summary>
+    /// Machine Tray Setting (class) 定義視覺站的數量 (單一檢測流程視為一站)
+    /// </summary>
+    [Serializable]
+    public class MachineTraySetting
+    {
+        /// <summary>
+        /// 總共帶有結果的控制站
+        /// </summary>
+        public int NumOfTotalController { get; set; } = 1;
+    }
+
+    /// <summary>
+    /// 各Module流通的載體  (class) 載體 = 資料流(物件)
+    /// </summary>
+    public class BoatCarrier : TrayCarrier
+    {
+        /// <summary>
+        /// 散熱片檢測結果，HSInfo.Count為Row數量，HSInfo[i].Count為Col數量, 單顆產品相關資訊數據
+        /// </summary>
+        public List<List<TAProductInfo>> ProductInfos;
+        /// <summary>
+        /// 有關檢測相關的Data, 檢測相關資料包含檢測位置
+        /// </summary>
+        public InspectDatabase InspectData;
+        /// <summary>
+        /// 當視覺相機取像出現異常，是否將視覺結果Pass掉 (單盤Bypass)
+        /// </summary>
+        public bool IsErrorPassInspect = false;
+        /// <summary>
+        /// Boat盤上的Barcode
+        /// </summary>
+        [SecsSV("SV_BoatBarcode", true, false)]
+        public string BoatBarcode { get; set; } = "default";
+        /// <summary>
+        /// Host給的LotID 產品批號
+        /// </summary>
+        public string LotID = "LotID_default";
+        /// <summary>
+        /// 是否要計算大產品位置
+        /// </summary>
+        public bool IsCalBig = true;
+        /// <summary>
+        /// 如果是提前先拿，不要加入盤數計數 (提供控制判斷Flag)
+        /// </summary>
+        public bool IsPreUse = false;
+        /// <summary>
+        /// 是否為虛擬模式 (提供控制判斷Flag-離線模擬)
+        /// </summary>
+        public bool IsVirtual = false;
+        /// <summary>
+        /// 是否人員手動拿走了
+        /// </summary>
+        public bool IsRecheckTakeout = false;
+        /// <summary>
+        /// 是否為大產品
+        /// </summary>
+        public bool IsBigProduct = false;
+        /// <summary>
+        /// RecipeName
+        /// </summary>
+        public string RecipeName = "";
+
+
+    }
+
+    /// <summary>
+    /// Query Tray Layout Args  (class) 提供產品布局資料
+    /// </summary>
+    public class QueryTrayLayoutArgs
+    {
+        public TrayDesc Desc;
+        public int CheckStationCount = 1;
+    }
+
+    /// <summary>
+    /// 流道上(單顆)產品資訊  (class) (TA=設備型號)
+    /// </summary>
+    public class ProductInfo
+    {
+        /// <summary>
+        /// 檢測結果
+        /// </summary>
+        public ICInfo InspectResult;
+        /// <summary>
+        /// 這顆產品的Row(在載盤上的編號_Row) ，1開始
+        /// </summary>
+        /// 
+        /// <summary>
+        /// 檢測結果-Mosaic
+        /// </summary>
+        public ICInfo InspectResultMosaic;
+
+        public int Row;
+        /// <summary>
+        /// 這顆產品的Col(在載盤上的編號_Col)，1開始
+        /// </summary>
+        public int Col;
+        /// <summary>
+        /// 這顆產品檢測異常次數 (暫時不用)
+        /// </summary>
+        public int ErrorCount = 0;
+
+        /// <summary>
+        /// Product Barcode
+        /// </summary>
+        public string ProductBarcode = "None";
+
+        public List<BigMapResult> BigMapResults;
+    }
+
+    public class TAProductInfo: ProductInfo
+    {
+        public List<BigMapResult> BigMapResults;
+    }
+    public class BigMapResult
+    {
+        public int MapIndex = -1;
+        /// <summary>
+        /// Pass、Fail、Invalid、None
+        /// </summary>
+        public string InspectResult = "None";
+    }
+    /// <summary>
+    /// Inspect Database  (class) 檢測相關參數
+    /// </summary>
+    public class InspectDatabase
+    {
+        /// <summary>
+        /// 檢測位置資訊，包含檢測需要的位置，取得Boat資訊後，會自行計算，不需動他
+        /// </summary>
+        public InspectionPostion InspectionPostion;
+        /// <summary>
+        /// 是否檢測完
+        /// </summary>
+        public bool InspectDone = false;
+        /// <summary>
+        /// 當下檢測Fail的產品Index，Row(Y),Col(X),這裡的Row,Col是代表相機移動的Step，不是實際boat的Row,Col
+        /// </summary>
+        public List<Point2d> FailIndex;
+
+
+    }
+
+
+    /// <summary>
+    /// 檢測位置資料結構，儲存著檢測位置與檢測移動次數與FOV  (class) 檢測位置數據
+    /// </summary> 
+    public class InspectionPostion
+    {
+        /// <summary>
+        /// 詳細的Tray Info data
+        /// </summary>
+        public TrayContainer Container;
+        /// <summary>
+        /// 一個FOV多少個產品 
+        /// </summary>
+        public int XStepCount;
+
+        /// <summary>
+        /// 一個FOV多少個產品 
+        /// </summary>
+        public int YStepCount;
+
+        /// <summary>
+        /// 一個block 多少FOV 
+        /// </summary>
+        public int XMaxStepCount;
+
+        /// <summary>
+        /// 一個block 多少FOV 
+        /// </summary>
+        public int YMaxStepCount;
+        /// <summary>
+        /// 大產品取像位置X(X軸移動) []第幾顆、[]組圖的第幾張
+        /// </summary>
+        public double[][] _bigProductX;
+        /// <summary>
+        /// 大產品取像位置Y(Y軸移動) []第幾顆、[]組圖的第幾張
+        /// </summary>
+        public double[][] _bigProductY;
+        /// <summary>
+        /// 大產品取像位置Z(Z軸移動) []第幾顆、[]組圖的第幾張
+        /// </summary>
+        public double[][] _bigProductZ;
+        /// <summary>
+        /// 單一block 取像位置 
+        /// </summary>
+        public double[] _blockStepX;
+        /// <summary>
+        /// 單一block 取像位置 
+        /// </summary>
+        public double[] _blockStepY;
+        /// <summary>
+        /// 整個Tray 取像位置 : singleRowIndex
+        /// </summary>
+        public double[] _trayStepX;
+        /// <summary>
+        /// 整個Tray 取像位置 : singleColIndex
+        /// </summary>
+        public double[] _trayStepY;
+        /// <summary>
+        /// 一個FOV 多少個產品間隔
+        /// </summary>
+        public int PitchXCount;
+
+        /// <summary>
+        /// 一個FOV 多少個產品間隔 
+        /// </summary>
+        public int PitchYCount;
+
+        /// <summary>
+        /// 組圖X有幾張(為影像的X方向)
+        /// </summary>
+        public int MosaicXCount = 1;
+        /// <summary>
+        /// 組圖Y有幾張(為影像的Y方向)
+        /// </summary>
+        public int MosaicYCount = 1;
+        /// <summary>
+        /// 組圖Z有幾張(為影像的Y方向) - (暫留)
+        /// </summary>
+        public int MosaicZCount = 1;
+
+        private int FOV_SIZE = 60;//TODO 需要修改 , 若正方形則採用這個
+        private int FOV_SIZE_X = 60;//TODO 60測試用，需改成70, 若矩形則採用這個(X)
+        private int FOV_SIZE_Y = 60; //若矩形則採用這個(X)
+
+        //public MosaicTool.MotionPoseGrid MotionGrid = new MosaicTool.MotionPoseGrid();
+
+        /// <summary>
+        /// Index(編號) For FOV (Y) 資料運算用
+        /// </summary>
+        public static Dictionary<int, List<int>> YInfo = new Dictionary<int, List<int>>();
+
+        /// <summary>
+        /// Index(編號) For FOV (X) 資料運算用
+        /// </summary>
+        public static Dictionary<int, List<int>> XInfo = new Dictionary<int, List<int>>();
+
+        /// <summary>
+        /// 判斷是否單顆檢測
+        /// </summary>
+        public bool IsFovSingle = true;
+        /// <summary>
+        /// 判斷目前FOV Product State 一個FOV要取幾顆
+        /// </summary>
+        public int UseFOVProductState = 0;
+        /// <summary>
+        /// 產品是one Block or many Block
+        /// </summary>
+        public bool SingleBlock = true;
+        /// <summary>
+        ///  More Block X Max Step Count
+        /// </summary>
+        public int MoreBlockXMaxStepCount = 0;
+        /// <summary>
+        ///  More Block Y Max Step Count
+        /// </summary>
+        public int MoreBlockYMaxStepCount = 0;
+        /// <summary>
+        /// 一個FOV要取幾顆(X)
+        /// </summary>
+        public int FOVProductXnum = 1;
+        /// <summary>
+        /// 一個FOV要取幾顆(Y)
+        /// </summary>
+        public int FOVProductYnum = 1;
+        /// <summary>
+        /// Block Num_X
+        /// </summary>
+        public int BlockNum_X = 1;
+        /// <summary>
+        ///  Block Num_Y
+        /// </summary>
+        public int BlockNum_Y = 1;
+        /// <summary>
+        /// 一個Block IC數量(X)
+        /// </summary>
+        public int BlockICNumCol = 1;
+        /// <summary>
+        /// 一個Block IC數量(Y)
+        /// </summary>
+        public int BlockICNumRow = 1;
+
+
+
+
+        /// <summary>
+        /// 產品厚度
+        /// </summary>
+        public double ContainerThickness;
+
+        /// <summary>
+        /// 大小產品判斷
+        /// </summary>
+        public ProductTypeEm ProductType { get; set; } = ProductTypeEm.SmallProduct;
+        public bool UseProductMosaic = true;//TODO 是否使用各自產品檔的組圖功能。目前測試用
+        public List<Point2d> MosaicPos = new List<Point2d>();
+        public string ProductName = "";
+        public bool IsCalBig = false;
+        /// <summary>
+        /// 是否計算完已經使用各產品檔有各自的校正位置
+        /// </summary>
+        public bool AlreadyProductMosaic = false;
+        /// <summary>
+        /// InspectionPostion 建構子
+        /// </summary>
+        /// <param name="carrier"></param>
+        /// <param name="isFovSingle"></param>
+        public InspectionPostion(BoatCarrier carrier, bool isFovSingle, string productName,
+            bool isCalBig, bool bUseSingleICFlag, int bFOVProductState, int bProductXNum, int bProductYNum,
+            int bBlockCol, int bBlockRow)
+        {
+            IsFovSingle = isFovSingle; //單FOV
+            Container = carrier.Tray; //詳細的Tray Info data 放入容器
+            //MosaicPos = mosaicPos;
+            ProductName = productName;
+            IsCalBig = isCalBig;
+            UseFOVProductState = bFOVProductState; //0:單顆檢 , 1:多顆檢(MAX) , 2: 多顆檢(可設定)
+            FOVProductXnum = bProductXNum;
+            FOVProductYnum = bProductYNum;
+            SingleBlock = bUseSingleICFlag; // false:複數Block , true:單一Block
+            BlockNum_X = Container.TrayContainerDesc.SubDimSize.X; //tray 上Block數量
+            BlockNum_Y = Container.TrayContainerDesc.SubDimSize.Y;
+            BlockICNumCol = bBlockCol;
+            BlockICNumRow = bBlockRow;
+
+
+            if (bUseSingleICFlag) //(非Stripe)
+            {
+                BoatGetMultiBaseInfo(); //計算Boat盤產品基礎資訊 (產品設定-含小產品)
+                if (GetProductType() == ProductTypeEm.BigProduct && IsCalBig) { GetBigProductInfo(); } //判斷是否為大產品
+
+            }
+            else//多Block (Stripe)
+            {
+                Boat2_GetBlockBaseInfo();
+            }
+
+            CreateCoordsTran(); //轉換座標位置對應的FOV 的 index
+            ContainerThickness = Container.Blocks[0, 0].Ic[0, 0].ContainerThickness; //產品厚度
+        }
+ 
+
+        /// <summary>
+        /// 計算Boat盤產品基礎資訊(包含小產品) 判斷一個FOV可以容納幾個產品並算出定位資訊
+        /// (SingleIC)
+        /// </summary>
+        public void BoatGetMultiBaseInfo()
+        {
+
+            #region 判斷一個FOV 可以容納幾個產品(X,Y)
+
+            if (Container.BlockContainerDesc.Pitch.X == 0) //判斷是否為單顆產品在Boat上
+            {
+                PitchXCount = 0;
+            }
+            else
+            {
+
+                //怕數值太靠近，產品在影像邊緣
+                //計算產品邊緣與FOV之距離，避免兩者過於相近
+                // (FOV_SIZE_長度 - 產品大小_長度)/產品之間的Pitch_長度  <----- X方向( Math.Floor = 向下取整數)
+                double FloorDoubleX = Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) /
+                                          Container.BlockContainerDesc.Pitch.X);
+
+                //Pitch(X,Y)_Count = 產品與產品之間的間隔的數量
+                //判斷
+                if (FloorDoubleX - ((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) / Container.BlockContainerDesc.Pitch.X) >= -0.1)
+                {
+                    PitchXCount = Convert.ToInt16(FloorDoubleX) - 1;
+                }
+                else
+                {
+                    PitchXCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) /
+                                          Container.BlockContainerDesc.Pitch.X));
+                }
+
+                //避免負數
+                if (PitchXCount <= 0)
+                {
+                    PitchXCount = 0;
+                }
+            }
+
+            if (Container.BlockContainerDesc.Pitch.Y == 0)
+            {
+                PitchYCount = 0;
+            }
+            else
+            {
+
+                double FloorDoubleY = Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) /
+                                                  Container.BlockContainerDesc.Pitch.Y);
+
+                if (FloorDoubleY - ((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) / Container.BlockContainerDesc.Pitch.Y) >= -0.1)
+                {
+                    PitchYCount = Convert.ToInt16(FloorDoubleY) - 1;
+                }
+                else
+                {
+                    PitchYCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) /
+                                                                          Container.BlockContainerDesc.Pitch.Y));
+                }
+
+                if (PitchYCount <= 0)
+                {
+                    PitchYCount = 0;
+                }
+            }
+
+
+            #endregion
+
+            #region 判斷Boat取像(FOV_XY)總數量
+
+            //判斷一個FOV只拍一顆產品
+            //if (IsFovSingle == true)
+            //{
+            //    PitchXCount = 0;
+            //    PitchYCount = 0;
+            //}
+
+
+            if (UseFOVProductState == 0) //單顆檢
+            {
+                PitchXCount = 0;
+                PitchYCount = 0;
+
+                XStepCount = PitchXCount + 1;
+                YStepCount = PitchYCount + 1;
+            }
+            else if (UseFOVProductState == 1) //多顆檢(MAX)
+            {
+                XStepCount = PitchXCount + 1;
+                YStepCount = PitchYCount + 1;
+            }
+            else if (UseFOVProductState == 2) //多顆檢(設定)
+            {
+                XStepCount = FOVProductXnum < PitchXCount + 1 ? FOVProductXnum : PitchXCount + 1;
+                YStepCount = FOVProductYnum < PitchYCount + 1 ? FOVProductYnum : PitchYCount + 1;
+                PitchXCount = FOVProductXnum - 1;
+                PitchYCount = FOVProductYnum - 1;
+            }
+
+
+
+            //// 一個FOV多少產品 (Pitch_Count+ 1 = 產品數量)
+            //XStepCount = PitchXCount + 1;
+            //YStepCount = PitchYCount + 1;
+
+
+            //計算 (X,Y) 在Boat上需要取像(FOV)的數量
+            XMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.X) /
+                                                           Convert.ToDouble(XStepCount)));
+
+
+            YMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.Y) /
+                                                           Convert.ToDouble(YStepCount))); //每排最多Step
+
+            //宣告block陣列數量 (x,y)
+            _blockStepX = new double[XMaxStepCount];
+            _blockStepY = new double[YMaxStepCount];
+
+
+
+            MoreBlockXMaxStepCount = XMaxStepCount * Container.TrayContainerDesc.SubDimSize.X;
+            MoreBlockYMaxStepCount = YMaxStepCount * Container.TrayContainerDesc.SubDimSize.Y;
+
+
+            #endregion
+
+            #region 定位資訊寫入
+            //  Y :   block Step  = First Gap + ( ( Pitch Count * Pitch ) / 2 ) + (Pitch * Step Count * i) << 輸出為block Step Position >>
+            // 取像範圍位置(Position) = 第一個間隔 + ( ( 間隔次數*間隔長度) / 2 ) + (取像區塊次列*間隔長度)
+            for (int i = 0; i < YMaxStepCount; i++)
+            {
+                _blockStepY[i] = Container.BlockContainerDesc.FirstGap.Y +
+                                 ((PitchYCount * Container.BlockContainerDesc.Pitch.Y) / 2) +  //若是單顆PitchYCount = 0 
+                                 (Container.BlockContainerDesc.Pitch.Y * (YStepCount - 0) * i);
+
+
+            }
+
+
+            for (int i = 0; i < XMaxStepCount; i++)
+            {
+
+                _blockStepX[i] = Container.BlockContainerDesc.FirstGap.X +
+                                 (PitchXCount * Container.BlockContainerDesc.Pitch.X) / 2 + //若是單顆PitchXCount = 0 
+                                 (Container.BlockContainerDesc.Pitch.X * XStepCount * i);
+            }
+            #endregion
+
+        }
+        public void Boat1_GetMultiBaseInfo()
+        {
+
+            if (Container.BlockContainerDesc.Pitch.X == 0)
+            {
+                PitchXCount = 0;
+            }
+            else
+            {
+
+                //怕數值太靠近，產品在影像邊緣
+                double FloorDoubleX = Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) /
+                                          Container.BlockContainerDesc.Pitch.X);
+
+                if (FloorDoubleX - ((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) / Container.BlockContainerDesc.Pitch.X) >= -0.1)
+                {
+                    PitchXCount = Convert.ToInt16(FloorDoubleX) - 1;
+                }
+                else
+                {
+                    PitchXCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) /
+                                          Container.BlockContainerDesc.Pitch.X));
+                }
+
+                if (PitchXCount <= 0)
+                {
+                    PitchXCount = 0;
+                }
+            }
+
+            if (Container.BlockContainerDesc.Pitch.Y == 0)
+            {
+                PitchYCount = 0;
+            }
+            else
+            {
+
+                double FloorDoubleY = Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) /
+                                                  Container.BlockContainerDesc.Pitch.Y);
+
+                if (FloorDoubleY - ((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) / Container.BlockContainerDesc.Pitch.Y) >= -0.1)
+                {
+                    PitchYCount = Convert.ToInt16(FloorDoubleY) - 1;
+                }
+                else
+                {
+                    PitchYCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) /
+                                                                          Container.BlockContainerDesc.Pitch.Y));
+                }
+
+                if (PitchYCount <= 0)
+                {
+                    PitchYCount = 0;
+                }
+            }
+
+
+            // 一個FOV多少產品
+            XStepCount = PitchXCount + 1;
+            YStepCount = PitchYCount + 1;
+
+            XMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.X) /
+                                                           Convert.ToDouble(XStepCount)));
+
+            YMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.Y) /
+                                                           Convert.ToDouble(YStepCount))); //每排最多Step
+
+            _trayStepX = new double[XMaxStepCount];
+            _trayStepY = new double[YMaxStepCount];
+
+            _blockStepX = new double[XMaxStepCount];
+            _blockStepY = new double[YMaxStepCount];
+
+
+            for (int i = 0; i < YMaxStepCount; i++)
+            {
+
+                //_blockStepY[i] = YStandby +
+                //                                 Container.BlockContainerDesc.FirstGap.Y +
+                //                                (Container.TrayContainerDesc.SubDimSize.Y - 1) * Container.BlockContainerDesc.Pitch.Y -
+                //                                ((PitchYCount * Container.BlockContainerDesc.Pitch.Y) / 2) -
+                //                                (Container.BlockContainerDesc.Pitch.Y * (YStepCount - 0) * i);
+                _trayStepY[i] = Container.BlockContainerDesc.FirstGap.Y +
+                                 ((PitchYCount * Container.BlockContainerDesc.Pitch.Y) / 2) +
+                                 (Container.BlockContainerDesc.Pitch.Y * (YStepCount - 0) * i);
+
+                _blockStepY[i] = _trayStepY[i];
+            }
+
+            for (int i = 0; i < XMaxStepCount; i++)
+            {
+
+                //_blockStepX[i] = XStandby +
+                //                 Container.BlockContainerDesc.FirstGap.X +
+                //                 (PitchXCount * Container.BlockContainerDesc.Pitch.X) / 2 +
+                //                 (Container.BlockContainerDesc.Pitch.X * XStepCount * i);
+                _trayStepX[i] = Container.BlockContainerDesc.FirstGap.X +
+                                 (PitchXCount * Container.BlockContainerDesc.Pitch.X) / 2 +
+                                 (Container.BlockContainerDesc.Pitch.X * XStepCount * i);
+
+                _blockStepX[i] = _trayStepX[i];
+            }
+        }
+
+
+        /// <summary>
+        /// 計算Boat盤產品基礎資訊(包含小產品) 判斷一個FOV可以容納幾個產品並算出定位資訊
+        /// (Stripe)
+        /// </summary>
+        private void Boat2_GetBlockBaseInfo()
+        {
+
+            #region 計算每個 Block 內可以放幾個元件 Pitch
+            /*
+             *  1. FOV_SIZE：相機視野大小（可能為長寬的其中一軸）
+             *  2. ContainerSize.X/Y：單一元件尺寸
+             *  3. Pitch.X/Y：元件與元件間的間距（中心到中心）
+             *  4. 目的：排除掉第一個元件後，在 FOV 裡最多還可以再放幾個完整的 Pitch。
+            */
+
+            if (Container.BlockContainerDesc.Pitch.X == 0) PitchXCount = 0;
+            else
+            {
+                PitchXCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X) /
+                                                      Container.BlockContainerDesc.Pitch.X));
+            }
+            if (Container.BlockContainerDesc.Pitch.Y == 0) PitchYCount = 0;
+            else
+            {
+                PitchYCount = Convert.ToInt16(Math.Floor((FOV_SIZE - Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y) /
+                                              Container.BlockContainerDesc.Pitch.Y));
+            }
+
+            #endregion 計算每個 Block 內可以放幾個元件 Pitch
+
+
+            #region 計算 FOV 內有幾顆元件
+
+            ////若是FOV檢單一產品 Pitch(X/Y)Count = 0 
+            //if (IsFovSingle == true)
+            //{
+            //    PitchXCount = 0;
+            //    PitchYCount = 0;
+            //}
+
+
+            if (UseFOVProductState == 0) //單顆檢
+            {
+                PitchXCount = 0;
+                PitchYCount = 0;
+
+                XStepCount = PitchXCount + 1;
+                YStepCount = PitchYCount + 1;
+            }
+            else if (UseFOVProductState == 1) //多顆檢(MAX)
+            {
+                XStepCount = PitchXCount + 1;
+                YStepCount = PitchYCount + 1;
+            }
+            else if (UseFOVProductState == 2) //多顆檢(設定)
+            {
+                XStepCount = FOVProductXnum < PitchXCount + 1 ? FOVProductXnum : PitchXCount + 1;
+                YStepCount = FOVProductYnum < PitchYCount + 1 ? FOVProductYnum : PitchYCount + 1;
+                PitchXCount = XStepCount - 1;
+                PitchYCount = YStepCount - 1;
+            }
+
+
+            //XStepCount = PitchXCount + 1;
+            //YStepCount = PitchYCount + 1;
+
+            #endregion 計算 FOV 內有幾顆元件
+
+
+            #region 計算一個 Block 所需的 Step 數（整個 Block 用幾張圖蓋完）
+
+            /*
+             * 1. SubDimSize.X/Y：一個 Block 的元件總數（例如一排 30 顆）
+             * 2. XStepCount：一張圖可以拍幾顆
+             * 3. 用來決定一個 Block 要移動幾次才能全部拍完
+             */
+
+
+            XMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.X) /
+                                                           Convert.ToDouble(XStepCount))); //每排最多Step
+            YMaxStepCount = Convert.ToInt16(Math.Ceiling(Convert.ToDouble(Container.BlockContainerDesc.SubDimSize.Y) /
+                                                           Convert.ToDouble(YStepCount)));
+
+            #endregion  計算一個 Block 所需的 Step 數（整個 Block 用幾張圖蓋完）
+
+
+            #region 計算一個 Block 的所有拍照位置
+            /*
+             * 1. 從左邊對齊開始，預留 FirstGap（邊界距離）
+             * 2. 加上整個 FOV 區的中心（例如半個寬度）
+             * 3. 然後乘上拍照張數（偏移 Step）
+             */
+            _blockStepX = new double[XMaxStepCount];
+            _blockStepY = new double[YMaxStepCount];
+
+            // 單一Block取像位置
+            for (int i = 0; i < XMaxStepCount; i++)
+            {
+                _blockStepX[i] = (Container.TrayContainerDesc.FirstGap.X - (Container.BlockContainerDesc.ContainerSize.X / 2)) + Container.BlockContainerDesc.FirstGap.X +
+                                (PitchXCount * Container.BlockContainerDesc.Pitch.X) / 2 +
+                                (Container.BlockContainerDesc.Pitch.X * XStepCount * (i));
+            }
+
+            for (int i = 0; i < YMaxStepCount; i++)
+            {
+                _blockStepY[i] = (Container.TrayContainerDesc.FirstGap.Y - (Container.BlockContainerDesc.ContainerSize.Y / 2)) + Container.BlockContainerDesc.FirstGap.Y +
+                     (PitchYCount * Container.BlockContainerDesc.Pitch.Y) / 2 +
+                                (Container.BlockContainerDesc.Pitch.Y * YStepCount * (i));
+
+            }
+
+            #endregion 計算一個 Block 的所有拍照位置
+
+
+
+            #region 計算整個 Tray 所有拍照位置（包含多個 Block 疊加）
+
+            //將每個 Block 的 _blockStepX 進一步偏移（依據整個 Tray 的列距）
+            //實現整片晶片盤的拍照座標分布
+
+            MoreBlockXMaxStepCount = XMaxStepCount * Container.TrayContainerDesc.SubDimSize.X;
+            MoreBlockYMaxStepCount = YMaxStepCount * Container.TrayContainerDesc.SubDimSize.Y;
+
+            _trayStepX = new double[XMaxStepCount * Container.TrayContainerDesc.SubDimSize.X];
+            _trayStepY = new double[YMaxStepCount * Container.TrayContainerDesc.SubDimSize.Y];
+
+            //計算整片 Tray 所有 Block 的拍照位置（X方向）
+            for (int i = 0; i < Container.TrayContainerDesc.SubDimSize.X; i++)// i = 第幾個 Block
+            {
+                for (int j = 0; j < XMaxStepCount; j++)// j = 該 Block 中第幾個拍照點
+                {
+                    _trayStepX[i * XMaxStepCount + j] = _blockStepX[j] + i * Container.TrayContainerDesc.Pitch.X;
+                }
+            }
+
+            for (int i = 0; i < Container.TrayContainerDesc.SubDimSize.Y; i++)
+            {
+                for (int j = 0; j < YMaxStepCount; j++)
+                {
+                    _trayStepY[i * YMaxStepCount + j] = _blockStepY[j] + i * Container.TrayContainerDesc.Pitch.Y;
+                }
+            }
+
+            #endregion 計算整個 Tray 所有拍照位置（包含多個 Block 疊加）
+
+
+
+        }
+
+        /// <summary>
+        /// 轉換座標位置對應的FOV 的 index
+        /// </summary>
+        public void CreateCoordsTran()
+        {
+            XInfo.Clear();
+            YInfo.Clear();
+            int xStep = 0;
+            int yStep = 0;
+            int BlockXCountState = 0;
+            int BlockYCountState = 0;
+            //X-side 計算總步數
+            for (int i = 0; i < MoreBlockXMaxStepCount; i++)//xuan
+            {
+                List<int> cols = new List<int>();
+
+
+                if (i < XMaxStepCount) //第一個Block
+                {
+                    BlockXCountState = 1;
+                }
+                else if (i > XMaxStepCount && i < XMaxStepCount * 2) //第二個Block
+                {
+                    BlockXCountState = 2;
+                }
+                else if (i > XMaxStepCount * 2 && i < XMaxStepCount * 3)//第三個Block
+                {
+                    BlockXCountState = 3;
+                }
+
+                //檢查是否為最後一段位置
+                if ((i + 1) % (XMaxStepCount * BlockXCountState) == 0)//xuan
+                {
+                    //xuan
+                    int notFullX;
+
+                    //notFullX 為相除之後餘數，判斷Block是否為滿版 (X-side) 滿不滿版有其步數計算差異
+                    notFullX = Container.BlockContainerDesc.SubDimSize.X % XStepCount;
+
+                    //xuan
+                    //計算 X-Side 總步數
+                    if (notFullX == 0)
+                    {
+                        for (int j = 0; j < XStepCount; j++)
+                        {
+                            cols.Add(xStep);
+                            xStep++;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < notFullX; j++)
+                        {
+                            cols.Add(xStep);
+                            xStep++;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < XStepCount; j++)
+                    {
+                        cols.Add(xStep);
+                        xStep++;
+                    }
+                }
+
+                XInfo.Add(i, cols); //x = i(Index) , cols(Position)
+            }
+
+
+
+
+
+
+            //Y-side 計算總步數
+            for (int i = 0; i < MoreBlockYMaxStepCount; i++)
+            {
+                List<int> rows = new List<int>();
+                //if (i % YMaxStepCount == 0)//origin
+
+                if (i < YMaxStepCount) //第一個Block
+                {
+                    BlockYCountState = 1;
+                }
+                else if (i > YMaxStepCount && i < YMaxStepCount * 2) //第二個Block
+                {
+                    BlockYCountState = 2;
+                }
+                else if (i > YMaxStepCount * 2 && i < YMaxStepCount * 3)//第三個Block
+                {
+                    BlockYCountState = 3;
+                }
+
+
+
+                if ((i + 1) % (YMaxStepCount * BlockYCountState) == 0)//xuan
+                {
+                    int notFullY;
+
+                    notFullY = Container.BlockContainerDesc.SubDimSize.Y % YStepCount;
+
+
+                    if (notFullY == 0)
+                    {
+                        for (int j = 0; j < YStepCount; j++)
+                        {
+                            rows.Add(yStep);
+                            yStep++;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < notFullY; j++)
+                        {
+                            rows.Add(yStep);
+                            yStep++;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < YStepCount; j++)
+                    {
+                        rows.Add(yStep);
+                        yStep++;
+                    }
+                }
+
+                YInfo.Add(i, rows);  //y = i(Index) , cols(Position)
+            }
+        }
+
+        /// <summary>
+        /// 輸入X index 返回在哪個FOV singleRowIndex index 
+        /// </summary>
+        /// <returns></returns>
+        public int SingleToGroupX(int xIndex)
+        {
+            int index = -1;
+
+            for (int i = 0; i < XInfo.Count; i++)
+            {
+                if (XInfo[i].Contains(xIndex))
+                {
+                    index = i;
+                    break;
+                }
+
+            }
+            return index;
+        }
+
+        /// <summary>
+        /// 輸入Y index 返回在哪個FOV singleRowIndex index
+        /// </summary>
+        /// <returns></returns>
+        public int SingleToGroupY(int yIndex)
+        {
+            int index = -1;
+
+            for (int i = 0; i < YInfo.Count; i++)
+            {
+                if (YInfo[i].Contains(yIndex))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// 取得Product Type (大/小產品確認)
+        /// </summary>
+        /// <returns></returns>
+        public ProductTypeEm GetProductType()
+        {
+            if (Container.IcLayout[0, 0].ContainerSize.Y > FOV_SIZE_Y ||
+               Container.IcLayout[0, 0].ContainerSize.X > FOV_SIZE_X)
+            {
+                ProductType = ProductTypeEm.BigProduct;
+            }
+            else
+            {
+                ProductType = ProductTypeEm.SmallProduct;
+            }
+            return ProductType;
+        }
+
+
+        public void GetBigProductInfo()
+        {
+            //LoadMosaic();
+            CalBigProduct();
+        }
+
+        public void LoadMosaic()
+        {
+            //MotionGrid = HTATool.ReadXml<Calibration.Halcon.MosaicTool.MotionPoseGrid>("D:\\Coordinator2.0\\Mosaic\\TA2000Vision\\cam0_grid.xml");
+        }
+
+        /// <summary>
+        /// 計算大產品取像位置
+        /// </summary>
+        public int MosaicTotalCount = 1;
+        private void CalBigProduct()
+        {
+            int mosaicPosCount = 0;
+
+
+            List<Point2d> simpleMosaicPoints = new List<Point2d>();
+
+            var mosaicForm = new MosaicForm(TATool.MainController);
+
+             mosaicForm.SetProductPosition(ProductName, new HTA.Utility.Structure.Point2d(Container.IcLayout[0, 0].ContainerSize.X, Container.IcLayout[0, 0].ContainerSize.Y),
+                    new Point2d[] { new Point2d(TATool.InspecttPosition_BX1, TATool.InspecttPosition_AY1) }, false, false, new Point2d(1, 1), out var productCapturePoints);
+
+            simpleMosaicPoints = productCapturePoints[0].ToList();
+            mosaicPosCount = simpleMosaicPoints.Count;
+            MosaicTotalCount = mosaicPosCount;
+
+            //BA3000 因為一次只吸一顆大產品，所以X軸只會有一個位置
+            _bigProductX = new double[1][];
+
+            //X軸為底下流道移動，只會影響拍第幾個Col，對於組圖檢測沒相關
+            for (int i = 0; i < 1; i++)
+            {
+                _bigProductX[i] = new double[mosaicPosCount];
+                for (int j = 0; j < mosaicPosCount; j++)
+                {
+                    _bigProductX[i][j] = simpleMosaicPoints[j].x;
+                }
+            }
+
+
+            //Y軸為影像X方向
+            //BA3000 因為一次只吸一顆大產品，所以X軸只會有一個位置
+            _bigProductY = new double[1][];
+
+            //X軸為底下流道移動，只會影響拍第幾個Col，對於組圖檢測沒相關
+            for (int i = 0; i < 1; i++)
+            {
+                _bigProductY[i] = new double[mosaicPosCount];
+                for (int j = 0; j < mosaicPosCount; j++)
+                {
+                    _bigProductY[i][j] = simpleMosaicPoints[j].y;
+                }
+            }
+            mosaicForm?.Dispose();
+        }
+        /*
+        private void CalBigProduct_Old()
+        {
+            try
+            {
+                double mosaicDiffX = 0;
+                double mosaicDiffY = 0;
+
+                double xSplits = 0;
+                double ySplits = 0;
+
+                List<double> X_List = null;
+                List<double> Y_List = null;
+
+                List<double> pointList_X = new List<double>();
+                List<double> pointList_Y = new List<double>();
+
+                if (MotionGrid.Poses.Count > 2)
+                {
+                    if (MotionGrid.Poses[MotionGrid.Poses.Count - 1].GridPoseX != 0)
+                    {
+                        mosaicDiffX = (MotionGrid.Poses[MotionGrid.Poses.Count - 1].MotionX - MotionGrid.Poses[0].MotionX) / MotionGrid.Poses[MotionGrid.Poses.Count - 1].GridPoseX;
+                        //mosaicDiffX = 40;
+                        xSplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X - FOV_SIZE_X) / mosaicDiffX) + 1; //第一個1是第一個扣掉的FOV，然後無條件進位
+                    }
+                    else
+                    {
+                        xSplits = 1;
+                    }
+
+                    if (MotionGrid.Poses[MotionGrid.Poses.Count - 1].GridPoseY != 0)
+                    {
+                        mosaicDiffY = (MotionGrid.Poses[MotionGrid.Poses.Count - 1].MotionY - MotionGrid.Poses[0].MotionY) / MotionGrid.Poses[MotionGrid.Poses.Count - 1].GridPoseY;
+                        //mosaicDiffY = 40;
+                        ySplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y - FOV_SIZE_Y) / mosaicDiffY) + 1;  //第一個1是第一個扣掉的FOV，第二個1是間格數+1的
+                    }
+                    else
+                    {
+                        ySplits = 1;
+                    }
+                }
+
+
+
+                #region 暫時BYPASS 20250425
+                var poses = MotionGrid.Poses.Where(x => x.Name == ProductName).ToList();
+                if (UseProductMosaic && poses.Count > 0)
+                {
+                    //下面拿MosaicPos的位置
+
+                    MosaicPos.Clear();
+                    X_List = new List<double>();  //計算拼接X方向數量
+                    Y_List = new List<double>();  //計算拼接Y方向數量
+
+                    //for (int i = 0; i < poses.Count; i++)
+                    //{
+                    //    MosaicPos.Add(new Point2d(poses[i].MotionX, poses[i].MotionY));
+                    //    X_List.Add(poses[i].MotionX);
+                    //    Y_List.Add(poses[i].MotionY);
+                    //}
+
+                    for (int i = 0; i < poses.Count; i++)
+                    {
+                        MosaicPos.Add(new Point2d(poses[i].MotionX, poses[i].MotionY));
+                        X_List.Add(poses[i].MotionX);
+                        Y_List.Add(poses[i].MotionY);
+                    }
+
+
+
+                    List<double> signalProduct_x = new List<double>();
+                    List<double> signalProduct_y = new List<double>();
+                    for (int i = 0; i < X_List.Count / _blockStepX.Length; i++)
+                    {
+                        signalProduct_x.Add(X_List[i]);
+                        signalProduct_y.Add(Y_List[i]);
+                    }
+
+                    double X_SecondPOS;
+                    double Y_SecondPOS;
+
+                    if (!AreAllValuesEqual(signalProduct_x)) { X_SecondPOS = signalProduct_x.OrderBy(n => n).Distinct().ElementAt(1); }
+                    else { X_SecondPOS = signalProduct_x[0]; }
+                    if (!AreAllValuesEqual(signalProduct_y)) { Y_SecondPOS = signalProduct_y.OrderBy(n => n).Distinct().ElementAt(1); }
+                    else { Y_SecondPOS = signalProduct_y[0]; }
+
+                    //double X_SecondPOS = signalProduct_x.OrderBy(n => n).Distinct().ElementAt(1);
+                    //double Y_SecondPOS = signalProduct_y.OrderBy(n => n).Distinct().ElementAt(1);
+
+                    if (X_SecondPOS == signalProduct_x.Min()) { xSplits = 1; }
+                    else { xSplits = Math.Abs(signalProduct_x.Max() - signalProduct_x.Min()) / (X_SecondPOS - signalProduct_x.Min()) + 1; }
+
+                    if (Y_SecondPOS == signalProduct_y.Min()) { ySplits = 1; }
+                    else { ySplits = Math.Abs(signalProduct_y.Max() - signalProduct_y.Min()) / (Y_SecondPOS - signalProduct_y.Min()) + 1; }
+
+                    // xSplits = Math.Abs(signalProduct_x.Max() - signalProduct_x.Min()) / (X_SecondPOS - signalProduct_x.Min())  + 1; //第一個1是第一個扣掉的FOV，然後無條件進位
+                    //xSplits = xSplits / _blockStepX.Length;
+                    //ySplits = Math.Abs(signalProduct_y.Max() - signalProduct_y.Min()) / (Y_SecondPOS - signalProduct_y.Min()) + 1;
+                    //ySplits = ySplits / _blockStepY.Length;
+                    AlreadyProductMosaic = true;
+                }
+                else
+                {
+                    //
+                    mosaicDiffX = 1;
+                    mosaicDiffY = 1;
+                    //
+                    xSplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X - FOV_SIZE_X) / mosaicDiffX) + 1; //第一個1是第一個扣掉的FOV，然後無條件進位
+                    ySplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y - FOV_SIZE_Y) / mosaicDiffY) + 1;  //第一個1是第一個扣掉的FOV，第二個1是間格數+1的
+
+
+                    AlreadyProductMosaic = false;
+
+                    #region 判斷拍攝疊圖張數
+                    //TODO 下面的正負號須看軸方向
+                    if ((int)xSplits > 1 && (int)xSplits <= 2)
+                    {
+                        //中心點往左往右拍攝總寬各一半
+                        //var imgXSize = FOV_SIZE_X + (FOV_SIZE_X * 3 / 4); //一個FOV大小+不overlap的FOV大小(這樣等於是兩張影像overlap 1/4的FOV_SIZE大小)
+                        var leftPoint = _blockStepX[0] - mosaicDiffX / 2;//左邊的點=往右overlap大小/2，然後往左一半在一半的影像大小到左邊的點中心
+                        var rightPoint = _blockStepX[0] + mosaicDiffX / 2;//右邊的點=往左overlap大小/2，然後往右一半在一半的影像大小到右邊的點中心
+                        pointList_X.Add(rightPoint);
+                        pointList_X.Add(leftPoint);
+                    }
+
+                    if ((int)xSplits > 2 && (int)xSplits <= 3)
+                    {
+                        //中心點一張，往左往右各overlap一張
+                        var centerPoint = _blockStepX[0];
+                        var leftPoint = _blockStepX[0] + mosaicDiffX;
+                        var rightPoint = _blockStepX[0] - mosaicDiffX;
+                        pointList_X.Add(rightPoint);
+                        pointList_X.Add(centerPoint);
+                        pointList_X.Add(leftPoint);
+                    }
+
+                    if ((int)ySplits > 1 && (int)ySplits <= 2)
+                    {
+                        //中心點往左往右拍攝總寬各一半
+                        var topPoint = _blockStepY[0] - mosaicDiffY / 2;//左邊的點=往右overlap大小/2，然後往左一半在一半的影像大小到左邊的點中心
+                        var downPoint = _blockStepY[0] + mosaicDiffY / 2;//右邊的點=往左overlap大小/2，然後往右一半在一半的影像大小到右邊的點中心
+                        pointList_Y.Add(downPoint);
+                        pointList_Y.Add(topPoint);
+                    }
+
+                    if ((int)ySplits > 2 && (int)ySplits <= 3)
+                    {
+                        //中心點一張，往左往右各overlap一張
+                        var centerPoint = _blockStepY[0];
+                        var topPointPoint = _blockStepY[0] + mosaicDiffY;
+                        var downPoint = _blockStepY[0] - mosaicDiffY;
+                        pointList_Y.Add(downPoint);
+                        pointList_Y.Add(centerPoint);
+                        pointList_Y.Add(topPointPoint);
+                    }
+
+                    #endregion
+
+                    //Y軸為影像Y方向，Y軸只會有一顆產品
+                    //MosaicYCount = 1;
+
+                    if ((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X - FOV_SIZE_X) > 0)
+                    {
+                        MosaicXCount = (int)xSplits;
+                    }
+                    else
+                    {
+                        MosaicXCount = 1;
+                    }
+
+
+
+                    if ((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y - FOV_SIZE_Y) > 0)
+                    {
+                        MosaicYCount = (int)ySplits;
+                    }
+                    else
+                    {
+                        MosaicYCount = 1;
+                    }
+                }
+                #endregion
+
+                //var xSplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.X - FOV_SIZE_X) / mosaicDiffX ) + 1; //第一個1是第一個扣掉的FOV，然後無條件進位
+                //var zSplits = ((Container.Blocks[0, 0].Ic[0, 0].ContainerThickness - FOV_SIZE_Y) / (FOV_SIZE_Y * 3 / 4)) + 1 + 1; //第一個1是第一個扣掉的FOV，第二個1是間格數+1的
+
+                //Justin
+                //var ySplits = Math.Ceiling((Container.Blocks[0, 0].Ic[0, 0].ContainerSize.Y - FOV_SIZE_Y) / mosaicDiffY ) + 1;  //第一個1是第一個扣掉的FOV，第二個1是間格數+1的
+
+
+
+                //_bigProductX = new double[XMaxStepCount][];
+                ////X軸為底下流道移動，只會影響拍第幾個Col，對於組圖檢測沒相關
+                //for (int i = 0; i < XMaxStepCount; i++)
+                //{
+                //    _bigProductX[i] = new double[(int)Math.Round(xSplits)];
+                //    for (int j = 0; j < (int)xSplits; j++)
+                //    {
+                //        _bigProductX[i][j] = Container.BlockContainerDesc.FirstGap.X + i * Container.BlockContainerDesc.Pitch.X;
+                //    }
+                //}
+
+                if (UseProductMosaic && poses.Count > 0)
+                {
+                    pointList_X.Clear();
+                    pointList_Y.Clear();
+
+                    pointList_X = X_List.Distinct().ToList();
+                    pointList_Y = Y_List.Distinct().ToList();
+
+                    MosaicXCount = (int)xSplits;
+                    MosaicYCount = (int)ySplits;
+                }
+
+
+                //X軸為影像X方向
+                _bigProductX = new double[XMaxStepCount][];
+                for (int i = 0; i < XMaxStepCount; i++)
+                {
+                    //MosaicXCount == 1 就代表只有一個FOV，位置為一般的位置
+                    _bigProductX[i] = new double[MosaicXCount];
+                    if (MosaicXCount != 1)
+                    {
+                        for (int j = 0; j < MosaicXCount; j++)
+                        {
+                            _bigProductX[i][j] = pointList_X[j] + i * Container.BlockContainerDesc.Pitch.X;
+                            //_bigProductY[i][j] = FOV_SIZE_X + j * (FOV_SIZE_X*3/4) + i*Container.BlockContainerDesc.Pitch.Y;
+                        }
+                    }
+                    else
+                    {
+                        //_bigProductX[i][0] = Container.BlockContainerDesc.FirstGap.X + i * Container.BlockContainerDesc.Pitch.X;
+                        for (int j = 0; j < MosaicXCount; j++)
+                        {
+                            _bigProductX[i][j] = pointList_X[i];
+                            //_bigProductY[i][j] = FOV_SIZE_X + j * (FOV_SIZE_X*3/4) + i*Container.BlockContainerDesc.Pitch.Y;
+                        }
+                    }
+
+                }
+
+                #region 暫時Bypass 20250425
+                //if (UseProductMosaic && poses.Count > 0)
+                //{
+                //    pointList.Clear();
+                //    pointList90.Clear();
+                //    for (int i = 0; i < MosaicPos.Count; i++)
+                //    {
+                //        pointList.Add(MosaicPos[i].x);
+                //        pointList90.Add(MosaicPos[i].x);
+                //    }
+                //    MosaicYCount = pointList.Count;
+                //}
+
+
+                #endregion
+
+                //幾顆是以檢測方向的數量為主，TA是X方向檢測，所以幾顆是以有幾個X為主
+                _bigProductY = new double[XMaxStepCount][];
+
+                for (int i = 0; i < XMaxStepCount; i++)
+                {
+                    //MosaicYCount == 1 就代表只有一個FOV，位置為一般的位置
+                    _bigProductY[i] = new double[MosaicYCount];
+                    if (MosaicYCount != 1)
+                    {
+                        for (int j = 0; j < MosaicYCount; j++)
+                        {
+                            _bigProductY[i][j] = pointList_Y[j] + i * Container.BlockContainerDesc.Pitch.Y;
+                            //_bigProductY[i][j] = FOV_SIZE_X + j * (FOV_SIZE_X*3/4) + i*Container.BlockContainerDesc.Pitch.Y;
+                        }
+                    }
+                    else
+                    {
+                        //_bigProductY[i][0] = Container.BlockContainerDesc.FirstGap.Y + i * Container.BlockContainerDesc.Pitch.Y;
+                        for (int j = 0; j < MosaicYCount; j++)
+                        {
+                            _bigProductY[i][j] = pointList_Y[i];
+                            //_bigProductY[i][j] = FOV_SIZE_X + j * (FOV_SIZE_X*3/4) + i*Container.BlockContainerDesc.Pitch.Y;
+                        }
+
+
+                    }
+
+                }
+
+
+                #region 暫時Bypass 20250425
+                //if (UseProductMosaic && poses.Count > 0)
+                //{
+                //    _bigProductZ[0][0] = MosaicPos[0].y;
+                //}
+                #endregion
+            }
+            catch (Exception ee)
+            {
+                string ss = ee.ToString();
+            }
+            
+
+        }
+
+*/
+
+        public bool AreAllValuesEqual<T>(List<T> list)
+        {
+            return list.Count == 0 || list.All(x => EqualityComparer<T>.Default.Equals(x, list[0]));
+        }
+
+
+
+        #region For ProductMeasureTool使用
+
+        public class BoatSettingData
+        {
+            public double Width { get; set; }
+            public double Length { get; set; }
+            public double X { get; set; }
+            public double Y { get; set; }
+            public int RowNum { get; set; }
+            public int ColNum { get; set; }
+            public double PitchX { get; set; } = 0;
+            public double PitchY { get; set; } = 0;
+
+            public double WarpageMax { get; set; }
+            public double WarpageMin { get; set; }
+        }
+
+        //[Serializable]
+        public class StripeSettingData
+        {
+            //stripe
+            /// <summary>
+            /// Stripe長
+            /// </summary>
+            public double Boat_L { get; set; } = 0;
+            /// <summary>
+            /// Stripe寬
+            /// </summary>
+            public double Boat_W { get; set; } = 0;
+
+            public double Boat_Thickness { get; set; } = 0;
+            /// <summary>
+            /// Block中心與另一個Block中心的X距離
+            /// </summary>
+            public double P_BDL { get; set; } = 0;
+            /// <summary>
+            /// Block中心與另一個Block中心的Y距離
+            /// </summary>
+            public double P_BDW { get; set; } = 0;
+            /// <summary>
+            /// StopBar到block中心Y距離
+            /// </summary>
+            public double P_BCY { get; set; } = 1;
+            /// <summary>
+            /// StopBar到block中心X距離
+            /// </summary>
+            public double P_BCX { get; set; } = 1;
+            /// <summary>
+            /// block裡，產品之間的X距離
+            /// </summary>
+            public double P_PDL { get; set; } = 1;
+            /// <summary>
+            /// block裡，產品之間的Y距離
+            /// </summary>
+            public double P_PDW { get; set; } = 1;
+
+            /// <summary>
+            /// block裡的第一個產品，到block中心Y距離
+            /// </summary>
+            public double P_PBCY { get; set; } = 1;
+
+            /// <summary>
+            /// block裡的第一個產品，到block中心X距離
+            /// </summary>
+            public double P_PBCX { get; set; } = 1;
+
+            public int ProductRowNum { get; set; } = 1;
+
+            public int ProductColNum { get; set; } = 1;
+        }
+
+        public class BaseProductSettingData
+        {
+            /// <summary>
+            /// 客戶名稱
+            /// </summary>
+            public string CustomerName { get; set; } = "";
+
+            //計算產品檔設定
+            /// <summary>
+            /// 右上角Block的右上角產品的右上角位置X
+            /// </summary>
+            public double RightUpBlock_RightUpProduct_RightUpCorner_X { get; set; } = 0;
+            public double RightUpBlock_RightUpProduct_RightUpCorner_Y { get; set; } = 0;
+
+            public double RightUpBlock_RightUpProduct_LeftDownCorner_X { get; set; } = 0;
+            public double RightUpBlock_RightUpProduct_LeftDownCorner_Y { get; set; } = 0;
+
+            public double RightUpBlock_LeftDownProduct_RightUpCorner_X { get; set; } = 0;
+            public double RightUpBlock_LeftDownProduct_RightUpCorner_Y { get; set; } = 0;
+
+            public double RightUpBlock_LeftDownProduct_LeftDownCorner_X { get; set; } = 0;
+            public double RightUpBlock_LeftDownProduct_LeftDownCorner_Y { get; set; } = 0;
+
+            public double LeftDownBlock_LeftDownProduct_RightUpCorner_X { get; set; } = 0;
+            public double LeftDownBlock_LeftDownProduct_RightUpCorner_Y { get; set; } = 0;
+
+            public double LeftDownBlock_LeftDownProduct_LeftDownCorner_X { get; set; } = 0;
+            public double LeftDownBlock_LeftDownProduct_LeftDownCorner_Y { get; set; } = 0;
+
+            public double RightUpBlock_RightUpCorner_X { get; set; } = 0;
+            public double RightUpBlock_RightUpCorner_Y { get; set; } = 0;
+            public double RightUpBlock_LeftDownCorner_X { get; set; } = 0;
+            public double RightUpBlock_LeftDownCorner_Y { get; set; } = 0;
+
+            public double BoatOriginPosition_X { get; set; } = 0;
+            public double BoatOriginPosition_Y { get; set; } = 0;
+
+            //DieGroup設定
+            public double[] DieGroup_CX { get; set; } = new double[6];
+            public double[] DieGroup_CY { get; set; } = new double[6];
+            public bool[] DieGroup_Ignore { get; set; } = new bool[6] { false, true, true, true, true, true };
+
+
+
+
+
+            public int DieGroupNum
+            {
+                get
+                {
+                    int count = 0;
+
+                    if (DieGroup_Ignore.Length == 4)
+                    {
+                        bool[] newDieGroup_Ignore = new bool[6] { false, true, true, true, true, true };
+                        for (int i = 0; i < 4; i++)
+                        {
+                            newDieGroup_Ignore[i] = DieGroup_Ignore[i];
+                        }
+
+                        DieGroup_Ignore = new bool[6] { false, true, true, true, true, true };
+                        DieGroup_Ignore = newDieGroup_Ignore;
+                    }
+
+                    for (int i = 0; i < DieGroup_Ignore.Length; i++)
+                    {
+                        if (DieGroup_Ignore[i] == false)
+                            count++;
+                    }
+
+                    return count;
+                }
+                set
+                {
+
+                }
+            }
+
+            //Align位置設定
+            public double[] Align_CX { get; set; } = new double[4];
+            public double[] Align_CY { get; set; } = new double[4];
+            public bool[] Align_Ignore { get; set; } = new bool[] { true, true, true, true };
+
+            public int AlignNum
+            {
+                get
+                {
+                    int count = 0;
+
+                    for (int i = 0; i < Align_Ignore.Length; i++)
+                    {
+                        if (Align_Ignore[i] == false)
+                            count++;
+                    }
+
+                    return count;
+                }
+                set
+                {
+
+                }
+            }
+
+
+            //產品上的Barcode
+            /// <summary>
+            /// 相對於產品中心的Barcode位置 X
+            /// </summary>
+            public double ProductBarcode_X { get; set; } = 0;
+            /// <summary>
+            /// 相對於產品中心的Barcode位置 Y
+            /// </summary>
+            public double ProductBarcode_Y { get; set; } = 0;
+
+
+            //使用boat還是Stripe
+            public bool UsingBoat_1 { get; set; } = true;//true =>boat , false => stripe
+
+            /// <summary>
+            /// Stripe是否有block，true=>no block , false => have block
+            /// </summary>
+            public bool NoBlock { get; set; } = true;
+
+            //LC用的IC Width和Length(目前先改用這個版本)
+            /// <summary>
+            /// 產品大小Y
+            /// </summary>
+            public double P_W { get; set; } = 10;
+
+            /// <summary>
+            /// 產品大小X
+            /// </summary>
+            public double P_L { get; set; } = 10;
+
+            /// <summary>
+            /// UA使用的產品大小 Y
+            /// </summary>
+            public double IC_Width { get; set; } = 10;
+
+            /// <summary>
+            /// UA使用的產品大小 X
+            /// </summary>
+            public double IC_Lenght { get; set; } = 10;
+
+            public int BlockRowNum { get; set; } = 1;
+
+            public int BlockColNum { get; set; } = 1;
+
+            public double ProductThickenss { get; set; } = 0;
+
+            public double Boat1_Thickness { get; set; } = 0;
+
+            public bool Using_ProductMeasure { get; set; } = true;
+            public bool IsBigProduct { get; set; } = false;
+        }
+        //[Serializable]
+        public class ProductSettingData : BaseProductSettingData
+        {
+            public string ProductName { get; set; } = "";
+
+            public int DieNum { get; set; } = 0;
+
+            public int ProductRowNum { get; set; } = 1;
+
+            public int ProductColNum { get; set; } = 1;
+            public List<DieData> DiesData { get; set; } = new List<DieData>();
+
+            public int ProductSizeDefine { get; } = 50; // 判定產品大小的定義尺寸,目前暫定50
+
+            public bool GlueBoxExist { get; set; } = false;
+
+            /// <summary>
+            /// 紀錄掃描Barcode位置靠近機台內外側，1 = 內側、 2 = 中間、 3 = 外側、 4 = 移動掃描
+            /// </summary>
+            public int ScanDist { get; set; } = 1;
+
+            public string _2DBarcodeReaderIP { get; set; } = "192.168.100.20";
+
+            public string _2DBarcodeReaderPort { get; set; } = "9004";
+
+            /// <summary>
+            /// 校正 Offset
+            /// </summary>
+            public double HalconAX1Offset { get; set; } = 0;
+            public double HalconAY1Offset { get; set; } = 0;
+            public double HalconAZ1Offset { get; set; } = 0;
+
+            public double GoldenOffsetX = 20;
+
+            public double GoldenOffsetY = -20;
+
+            public double AZ1FocusOffset_Up { get; set; } = 0;
+
+            public double AZ1FocusOffset_Track { get; set; } = 0;
+
+            public double AZ1FocusOffset_FocusComponent { get; set; } = 0;
+
+            public double ProductThickness { get; set; } = 0.5;
+
+            public double FocusGlue { get; set; } = 0.5;
+
+            /// <summary>
+            /// 對焦在TrayBarcode上
+            /// </summary>
+            public double FocusTrayBarcode { get; set; } = 0.0;
+
+            //BarCodeReader
+            public bool BarCodeReaderByPass { get; set; } = false;
+            public bool IsBarCodeReaderTeach { get; set; } = false;
+
+            /// <summary>
+            /// 灰卡流程 Offset
+            /// </summary>
+            public double GrayCardAX1Offset { get; set; } = 0;
+            public double GrayCardAY1Offset { get; set; } = 0;
+            public double GrayCardAZ1Offset { get; set; } = 0;
+
+            //光源測試工具
+            public double LightWeakPercent { get; set; } = 50;
+
+            /// <summary>
+            /// 一個FOV拍幾顆Row
+            /// </summary>
+            public int FOVCaptureRow { get; set; } = 0;
+            /// <summary>
+            /// 一個FOV拍幾顆Col
+            /// </summary>
+            public int FOVCaptureCol { get; set; } = 0;
+        }
+
+        // [Serializable]
+        public class DieData
+        {
+            public double DieToCenter_X { get; set; } = 0;
+
+            public double DieToCenter_Y { get; set; } = 0;
+
+            public double Die_Thickness { get; set; } = 0;
+        }
+
+        [Serializable]
+        public class ProductMeasureToolClass
+        {
+            //public UAProductSettingData UAProductSettingDataInfo { get; set; } = new UAProductSettingData();
+            public BoatSettingData Boat = new BoatSettingData();
+            //public ProductSettingData Product = new ProductSettingData();
+            public BaseProductSettingData _BaseProductSettingData = new BaseProductSettingData();
+            public DieData _DieData = new DieData();
+            //public MagazineSettingData Magazine = new MagazineSettingData();
+            //public InspectionSettingData Inspection = new InspectionSettingData();
+            public StripeSettingData Stripe = new StripeSettingData();
+            //For Test
+            public int SlowTime { get; set; } = 200;
+
+
+        }
+        #endregion
+
+    }
+
+}
